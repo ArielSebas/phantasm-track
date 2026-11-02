@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/*
+ * PhantasmTrack (GrimCourier) — gothic dark-fantasy grimoire theme.
+ * Deep parchment-black surfaces lit by arcane blue, amber-warning, and
+ * crimson-critical glows. Custom @keyframes power the "mana bar" status
+ * animations and ambient spellbook atmosphere.
+ */
+
+:root {
+  /* Base grimoire surfaces */
+  --background: #0a0710;
+  --foreground: #ede7f6;
+
+  /* Parchment / panel surfaces */
+  --surface: #140c1f;
+  --surface-raised: #1d1430;
+  --border-arcane: #3b2a5c;
+
+  /* Arcane accent palette */
+  --arcane-blue: #6ea8fe;
+  --arcane-blue-glow: #3b82f6;
+  --arcane-violet: #a78bfa;
+
+  /* Mana bar status hues */
+  --mana-normal: #38bdf8;   /* calm arcane blue  (< 80%)  */
+  --mana-warning: #f59e0b;  /* amber glow        (>= 80%) */
+  --mana-critical: #dc2626; /* pulsing crimson   (>= 100%) */
+
+  /* Portal / quest-stage accents */
+  --portal-origin: #22d3ee;
+  --portal-abyss: #a855f7;
+  --portal-delivery: #34d399;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border-arcane: var(--border-arcane);
+
+  --color-arcane-blue: var(--arcane-blue);
+  --color-arcane-violet: var(--arcane-violet);
+  --color-mana-normal: var(--mana-normal);
+  --color-mana-warning: var(--mana-warning);
+  --color-mana-critical: var(--mana-critical);
+  --color-portal-origin: var(--portal-origin);
+  --color-portal-abyss: var(--portal-abyss);
+  --color-portal-delivery: var(--portal-delivery);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Custom animation tokens (consumed via `animate-*` utilities) */
+  --animate-arcane-glow: arcane-glow 3s ease-in-out infinite;
+  --animate-warning-glow: warning-glow 1.8s ease-in-out infinite;
+  --animate-critical-pulse: critical-pulse 1s ease-in-out infinite;
+  --animate-rune-flicker: rune-flicker 4s steps(1, end) infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Arcane glow keyframes (placeholders for spooky gothic UI effects)  */
+/* ------------------------------------------------------------------ */
+
+/* Calm ambient breathing glow for normal-status mana bars / portals. */
+@keyframes arcane-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px var(--arcane-blue-glow), 0 0 12px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 14px var(--arcane-blue-glow), 0 0 28px rgba(59, 130, 246, 0.55);
+  }
+}
+
+/* Amber warning shimmer once a bar crosses the 80% threshold. */
+@keyframes warning-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.45), 0 0 16px rgba(245, 158, 11, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.75), 0 0 32px rgba(245, 158, 11, 0.4);
+  }
+}
+
+/* Crimson danger pulse once a limit is reached (>= 100%). */
+@keyframes critical-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(220, 38, 38, 0.6), 0 0 20px rgba(220, 38, 38, 0.35);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(220, 38, 38, 0.95), 0 0 44px rgba(220, 38, 38, 0.55);
+    opacity: 0.82;
+  }
+}
+
+/* Subtle rune flicker for ambient spellbook atmosphere. */
+@keyframes rune-flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  94%,
+  98% {
+    opacity: 0.55;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), "Georgia", "Times New Roman", serif;
+}

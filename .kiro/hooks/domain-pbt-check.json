@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Domain Purity & PBT Check",
+      "trigger": "PostFileSave",
+      "matcher": "src[\\\\/]domain[\\\\/]customs[\\\\/].*\\.ts$",
+      "action": {
+        "type": "agent",
+        "prompt": "A file under src/domain/customs/ was just saved. This is pure domain logic for PhantasmTrack (GrimCourier) and must stay UI-free and fully property-tested.\n\nPlease verify the following and report concisely:\n\n1. Domain purity: Confirm the saved file has NO React/UI dependencies. It must not import 'react', 'react-dom', 'next', 'next/*', 'lucide-react', any file under 'src/components/**' or 'src/app/**', or any browser/DOM API. If any such import or usage exists, flag it as a violation and propose the fix (move UI concerns into src/components/grimoire/).\n\n2. Determinism/pure-function check: Confirm the logic is pure and deterministic (no Date.now(), Math.random(), global mutable state, or side effects). Flag anything that would make property-based testing non-deterministic.\n\n3. Property-based tests: Locate the corresponding Vitest + fast-check property test in src/__tests__/customs/ (e.g. a *.property.test.ts matching the saved module). If it exists, run the test suite for the customs domain and report pass/fail. If no corresponding property test exists for the functions in this file, remind that tech.md requires PBT coverage on all customs/tax/weight/mana-bar math and list which exported functions still need fast-check properties (reference the design's Correctness Properties where applicable).\n\nKeep the report short: list violations (if any), the test result, and any missing PBT coverage. Do not scaffold or modify unrelated files."
+      }
+    }
+  ]
+}

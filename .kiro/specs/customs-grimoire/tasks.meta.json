@@ -1,0 +1,150 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Initialize the Next.js (App Router) + TypeScript + Tailwind CSS project": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620831527
+      },
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620841145
+      }
+    ],
+    "1.2 Set up the Vitest + fast-check testing harness": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620831643
+      }
+    ],
+    "1.3 Create the source folder structure and barrel": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620831712
+      }
+    ],
+    "1.4 Verify `/.kiro` is NOT git-ignored": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620831781
+      }
+    ],
+    "2.1 Implement `src/domain/customs/types.ts`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620831895
+      }
+    ],
+    "2.2 Implement `src/domain/customs/config.ts`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620831963
+      }
+    ],
+    "3.1 Implement `selectRegime` in `src/domain/customs/regime.ts`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832027
+      }
+    ],
+    "3.2 Implement `round2` helper and `calculateCustoms` in `src/domain/customs/calculator.ts`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832106
+      }
+    ],
+    "4. Checkpoint — customs calculator verified": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832191
+      }
+    ],
+    "5.1 Implement `computeManaBar` and `manaBarStatus` in `src/domain/customs/manaBar.ts`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832273
+      }
+    ],
+    "6.1 Implement `createQuest`, `advanceQuest`, `setQuestStage` in `src/domain/customs/quest.ts`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832347
+      }
+    ],
+    "7. Checkpoint — full domain layer verified": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832413
+      }
+    ],
+    "8.1 Implement `ManaBar.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832486
+      }
+    ],
+    "8.2 Implement `StagePortals.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832546
+      }
+    ],
+    "8.3 Implement `QuestCard.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832611
+      }
+    ],
+    "8.4 Implement `QuestLog.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832674
+      }
+    ],
+    "8.5 Implement `AlchemistCalculator.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832730
+      }
+    ],
+    "8.6 Implement `GrimoireLayout.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832792
+      }
+    ],
+    "9.1 Compose the grimoire in `src/app/page.tsx`": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832848
+      }
+    ],
+    "10. Final checkpoint — full build and test pass": [
+      {
+        "executionId": "f5f915bf-8dd6-44de-b9fe-f12e4718d1a4",
+        "chatSessionId": "sess_d0c4d424-5708-4a52-88e7-207641403f5b",
+        "timestamp": 1793620832914
+      }
+    ]
+  }
+}

@@ -6,31 +6,31 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
 
 ## Tasks
 
-- [ ] 1. Scaffold the project and toolchain
-  - [ ] 1.1 Initialize the Next.js (App Router) + TypeScript + Tailwind CSS project
+- [x] 1. Scaffold the project and toolchain
+  - [x] 1.1 Initialize the Next.js (App Router) + TypeScript + Tailwind CSS project
     - Create a Next.js App Router project with TypeScript and Tailwind CSS at the workspace root (keep existing `README.md` and `LICENSE`)
     - Install `lucide-react` for arcane/RPG icons
     - Configure Tailwind with custom keyframes placeholders for gothic glow effects (`globals.css` / `tailwind.config`)
     - _Tech: Next.js App Router, TypeScript, Tailwind, lucide-react_
 
-  - [ ] 1.2 Set up the Vitest + fast-check testing harness
+  - [x] 1.2 Set up the Vitest + fast-check testing harness
     - Install and configure Vitest and `fast-check` as dev dependencies
     - Add a `vitest.config.ts` that resolves the `src/` paths and runs with no DOM environment for domain suites
     - Add a `test` script that runs Vitest once (non-watch, e.g. `vitest run`)
     - _Tech: Vitest, fast-check, Testing Expectations_
 
-  - [ ] 1.3 Create the source folder structure and barrel
+  - [x] 1.3 Create the source folder structure and barrel
     - Create `src/app/`, `src/components/grimoire/`, `src/domain/customs/`, and `src/__tests__/customs/`
     - Create `src/domain/customs/index.ts` barrel (initially empty, re-exports added as modules land)
     - _Structure: Project Layout, Separation of Concerns_
 
-  - [ ] 1.4 Verify `/.kiro` is NOT git-ignored
+  - [x] 1.4 Verify `/.kiro` is NOT git-ignored
     - Inspect `.gitignore` (and any generated Next.js `.gitignore`) and ensure no entry excludes `/.kiro` or any subdirectory
     - If a framework-generated `.gitignore` adds such an entry, remove it; confirm `git check-ignore .kiro/specs/customs-grimoire/tasks.md` reports the file is tracked (not ignored)
     - _Tech: Strict Rules (never ignore /.kiro)_
 
 - [ ] 2. Define domain types and Ecuador configuration constants
-  - [ ] 2.1 Implement `src/domain/customs/types.ts`
+  - [~] 2.1 Implement `src/domain/customs/types.ts`
     - Define `Result<T, E>`, `ValidationField`, `ValidationError` (codes: missing, negative, nonFinite, invalidStage, outOfSequence, alreadyFinal)
     - Define `ImportRegime`, `PackageInput`, `CustomsConfig`, `TaxResult`
     - Define `ManaBarStatus`, `ManaBarInput`, `ManaBarResult`, `ManaBarConfig`
@@ -38,20 +38,20 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - No React/UI imports; export from barrel `index.ts`
     - _Requirements: 1.4, 1.5, 4.2, 5.1, 7.1, 8.1; Design: Data Models_
 
-  - [ ] 2.2 Implement `src/domain/customs/config.ts`
+  - [~] 2.2 Implement `src/domain/customs/config.ts`
     - Define constants `WEIGHT_LIMIT=4`, `FOB_LIMIT=400`, `WARNING_THRESHOLD=80`, `CRITICAL_THRESHOLD=100`
     - Define `DEFAULT_AD_VALOREM_RATE=0.10`, `DEFAULT_VAT_RATE=0.15`, `DEFAULT_FLAT_FEE=42`
     - Define `DEFAULT_CUSTOMS_CONFIG` and `DEFAULT_MANA_BAR_CONFIG`; export from barrel
     - _Requirements: 1.1, 1.2, 1.3, 2.3, 5.2, 5.3, 5.4; Design: Ecuador configuration constants_
 
 - [ ] 3. Implement the customs calculator (regime selection + taxes/fees)
-  - [ ] 3.1 Implement `selectRegime` in `src/domain/customs/regime.ts`
+  - [~] 3.1 Implement `selectRegime` in `src/domain/customs/regime.ts`
     - Validate presence/finiteness/non-negativity of `packageWeight` and `fobValue`; return `Err` with offending field otherwise
     - Select `FourByFour` when `weight <= weightLimit` AND `fob <= fobLimit`; else `General`
     - Pure, config-injected, returns `Result<ImportRegime, ValidationError>`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-  - [ ] 3.2 Implement `round2` helper and `calculateCustoms` in `src/domain/customs/calculator.ts`
+  - [~] 3.2 Implement `round2` helper and `calculateCustoms` in `src/domain/customs/calculator.ts`
     - Add `round2(x) = Math.round(x * 100) / 100`
     - Validate in order: missing → nonFinite → negative → regime selection → regime-specific config validity
     - 4x4: `adValoremTariff=0`, `vat=0`, `flatFee=config.flatFee`, `total=config.flatFee`; reject negative `flatFee`
@@ -89,11 +89,11 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - Guards against a property that is self-consistent but wrong; run and confirm they pass
     - _Requirements: 2.4, 3.4_
 
-- [ ] 4. Checkpoint — customs calculator verified
+- [~] 4. Checkpoint — customs calculator verified
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Implement the mana bar logic
-  - [ ] 5.1 Implement `computeManaBar` and `manaBarStatus` in `src/domain/customs/manaBar.ts`
+  - [~] 5.1 Implement `computeManaBar` and `manaBarStatus` in `src/domain/customs/manaBar.ts`
     - `computeManaBar(cumulative, limit)`: reject `limit <= 0` (field `limit`) and `cumulative < 0` (field `cumulative`); else `usagePercentage = cumulative / limit * 100` with no upper cap; return `ManaBarResult`
     - `manaBarStatus(usagePercentage)`: `normal` when `< 80`, `warning` when `80 <= p < 100`, `limitReached` when `>= 100`
     - Pure; export from barrel
@@ -114,7 +114,7 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - min 100 iterations; run and confirm it passes
 
 - [ ] 6. Implement the quest tracker
-  - [ ] 6.1 Implement `createQuest`, `advanceQuest`, `setQuestStage` in `src/domain/customs/quest.ts`
+  - [~] 6.1 Implement `createQuest`, `advanceQuest`, `setQuestStage` in `src/domain/customs/quest.ts`
     - `createQuest(id, label)` → `Quest` at `OriginPortal`
     - `advanceQuest(stage)` → `Ok(successor)` for non-terminal; `Err(code "alreadyFinal")` for `GuildDelivery`
     - `setQuestStage(current, target)` → `Ok(target)` only when `target` is the immediate successor; reject out-of-sequence (`outOfSequence`) and non-member targets (`invalidStage`), retaining `current`, field `targetStage`
@@ -130,44 +130,44 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - Unit example: `createQuest(...)` starts at `OriginPortal` — _Requirements: 8.1_
     - min 100 iterations for the property; run and confirm they pass
 
-- [ ] 7. Checkpoint — full domain layer verified
+- [~] 7. Checkpoint — full domain layer verified
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Build the gothic dark-fantasy UI components (`src/components/grimoire/`)
-  - [ ] 8.1 Implement `ManaBar.tsx`
+  - [~] 8.1 Implement `ManaBar.tsx`
     - Props `cumulative`, `limit`, `label`, optional icon; call `computeManaBar`; on `Err` show field-specific message, on `Ok` render fill width from `usagePercentage` (visual fill clamped to 100%, numeric readout uncapped)
     - Tint by status: `normal` calm arcane blue, `warning` amber glow (≥80%), `limitReached` pulsing crimson (≥100%) via Tailwind keyframes; use `lucide-react` icon
     - Consumes domain only; no local math
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.2, 7.3; Design: ManaBar_
 
-  - [ ] 8.2 Implement `StagePortals.tsx`
+  - [~] 8.2 Implement `StagePortals.tsx`
     - Map `QuestStage` → three arcane portals (Origin Portal → Customs Abyss → Guild Delivery), highlighting the active stage with glow; `lucide-react` icons
     - _Requirements: 8.1, 8.2, 8.3; Design: StagePortals_
 
-  - [ ] 8.3 Implement `QuestCard.tsx`
+  - [~] 8.3 Implement `QuestCard.tsx`
     - Render one `Quest` (label, current stage via `StagePortals`) with an "Advance" action that calls `advanceQuest(quest.stage)`; update state only on `Ok`, surface the validation message on `Err` without mutating the stage
     - _Requirements: 8.2, 8.3, 8.4, 8.5; Design: QuestCard_
 
-  - [ ] 8.4 Implement `QuestLog.tsx`
+  - [~] 8.4 Implement `QuestLog.tsx`
     - Render the collection of `QuestCard`s as adventurer's-log entries; pass through advance handlers
     - _Requirements: 8.1, 8.2, 8.3, 8.4; Design: QuestLog_
 
-  - [ ] 8.5 Implement `AlchemistCalculator.tsx`
+  - [~] 8.5 Implement `AlchemistCalculator.tsx`
     - Form for `Package_Weight` and `FOB_Value`; on change call `calculateCustoms(input, config)`; on `Ok` render regime badge (4x4 vs General) and tariff/VAT/flat-fee/total breakdown; on `Err` show field-specific message
     - Embed two `ManaBar`s (annual weight, annual budget) fed by cumulative totals
     - _Requirements: 1.1, 1.2, 1.3, 2.4, 3.4, 4.2, 4.4, 4.5; Design: AlchemistCalculator_
 
-  - [ ] 8.6 Implement `GrimoireLayout.tsx`
+  - [~] 8.6 Implement `GrimoireLayout.tsx`
     - Top-level atmospheric spellbook shell with background glow; hold client state (quests, calculator inputs, cumulative annual totals) and pass values down to `QuestLog` and `AlchemistCalculator`
     - _Requirements: 8.1, 5.1, 6.1; Design: GrimoireLayout_
 
 - [ ] 9. Wire the UI into the Next.js app
-  - [ ] 9.1 Compose the grimoire in `src/app/page.tsx`
+  - [~] 9.1 Compose the grimoire in `src/app/page.tsx`
     - Render `GrimoireLayout` as the home page; seed initial quests and cumulative totals; ensure components import only from `src/domain/customs` (barrel)
     - Confirm the app builds with the Next.js build step
     - _Requirements: 1.1, 5.1, 6.1, 8.1; Design: Architecture / Layered Data Flow_
 
-- [ ] 10. Final checkpoint — full build and test pass
+- [~] 10. Final checkpoint — full build and test pass
   - Ensure all tests pass and the project builds, ask the user if questions arise.
 
 ## Notes
