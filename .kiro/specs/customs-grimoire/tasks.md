@@ -59,24 +59,24 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - Return `Result<TaxResult, ValidationError>`; export both functions from barrel
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-  - [x]* 3.3 Write property test for regime boundary selection — `src/__tests__/customs/regime.property.test.ts`
+  - [x] 3.3 Write property test for regime boundary selection — `src/__tests__/customs/regime.property.test.ts`
     - **Property 1: Regime boundary selection** (in-range → FourByFour; over either limit → General)
     - **Validates: Requirements 1.1, 1.2, 1.3**
     - Use fast-check, min 100 iterations; tag with `// Feature: customs-grimoire, Property 1: ...`
     - Run the test and confirm it passes
 
-  - [x]* 3.4 Write property tests for regime totality and error paths — `src/__tests__/customs/regime.property.test.ts`
+  - [x] 3.4 Write property tests for regime totality and error paths — `src/__tests__/customs/regime.property.test.ts`
     - **Property 2: Regime totality (exactly one regime)** — **Validates: Requirements 1.4**
     - **Property 14: Missing input fields rejected** — **Validates: Requirements 1.5**
     - min 100 iterations each; run and confirm they pass
 
-  - [x]* 3.5 Write property tests for the 4x4 and General formulas — `src/__tests__/customs/calculator.property.test.ts`
+  - [x] 3.5 Write property tests for the 4x4 and General formulas — `src/__tests__/customs/calculator.property.test.ts`
     - **Property 3: 4x4 regime invariant** — **Validates: Requirements 2.1, 2.2, 2.3, 2.4**
     - **Property 4: General regime formula** — **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
     - **Property 5: General total monotonic non-decreasing in FOB** — **Validates: Requirements 3.4**
     - min 100 iterations each; run and confirm they pass
 
-  - [x]* 3.6 Write property tests for determinism, bounds, and calculator error paths — `src/__tests__/customs/calculator.property.test.ts`
+  - [x] 3.6 Write property tests for determinism, bounds, and calculator error paths — `src/__tests__/customs/calculator.property.test.ts`
     - **Property 6: Determinism and cent rounding** — **Validates: Requirements 4.1**
     - **Property 7: Non-negativity of monetary outputs** — **Validates: Requirements 4.2**
     - **Property 8: Total bounded below by flat fee** — **Validates: Requirements 4.3**
@@ -84,7 +84,7 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - **Property 16: Invalid configuration rejected** — **Validates: Requirements 2.5, 3.5**
     - min 100 iterations each; run and confirm they pass
 
-  - [x]* 3.7 Write unit (example) tests for worked customs scenarios — `src/__tests__/customs/calculator.example.test.ts`
+  - [x] 3.7 Write unit (example) tests for worked customs scenarios — `src/__tests__/customs/calculator.example.test.ts`
     - Known-value 4x4 package (total === flatFee) and known-value General package (expected tariff/VAT/total)
     - Guards against a property that is self-consistent but wrong; run and confirm they pass
     - _Requirements: 2.4, 3.4_
@@ -99,17 +99,17 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - Pure; export from barrel
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-  - [x]* 5.2 Write property tests for mana bar formula and bounds — `src/__tests__/customs/manaBar.property.test.ts`
+  - [x] 5.2 Write property tests for mana bar formula and bounds — `src/__tests__/customs/manaBar.property.test.ts`
     - **Property 9: Mana bar percentage formula and non-negativity** — **Validates: Requirements 5.1, 6.1, 7.1**
     - **Property 10: Mana bar bound relative to limit** — **Validates: Requirements 7.2, 7.3**
     - min 100 iterations each; tag each with its Property number; run and confirm they pass
 
-  - [x]* 5.3 Write property tests for mana bar status thresholds and determinism — `src/__tests__/customs/manaBar.property.test.ts`
+  - [x] 5.3 Write property tests for mana bar status thresholds and determinism — `src/__tests__/customs/manaBar.property.test.ts`
     - **Property 11: Mana bar status thresholds** (boundaries at 80 and 100) — **Validates: Requirements 5.2, 5.3, 5.4, 6.2, 6.3, 6.4**
     - **Property 12: Mana bar determinism** — **Validates: Requirements 7.4**
     - min 100 iterations each; run and confirm they pass
 
-  - [x]* 5.4 Write property test for mana bar error paths — `src/__tests__/customs/manaBar.property.test.ts`
+  - [x] 5.4 Write property test for mana bar error paths — `src/__tests__/customs/manaBar.property.test.ts`
     - **Property 17: Invalid mana bar inputs rejected** (`limit <= 0` → field limit; `cumulative < 0` → field cumulative) — **Validates: Requirements 5.5, 6.5, 7.5, 7.6**
     - min 100 iterations; run and confirm it passes
 
@@ -121,11 +121,11 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - Pure; export from barrel
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
-  - [x]* 6.2 Write property test for quest ordered transitions — `src/__tests__/customs/quest.property.test.ts`
+  - [x] 6.2 Write property test for quest ordered transitions — `src/__tests__/customs/quest.property.test.ts`
     - **Property 13: Quest ordered transitions** (successor-only success; terminal/out-of-sequence rejection; advanceQuest totality) — **Validates: Requirements 8.2, 8.3, 8.4, 8.5**
     - Enumerate all `(current, target)` pairs over `QUEST_SEQUENCE`; min 100 iterations; run and confirm it passes
 
-  - [x]* 6.3 Write property test for invalid quest targets and the creation example — `src/__tests__/customs/quest.property.test.ts`
+  - [x] 6.3 Write property test for invalid quest targets and the creation example — `src/__tests__/customs/quest.property.test.ts`
     - **Property 18: Invalid quest target rejected** (`invalidStage`, field `targetStage`, retains current) — **Validates: Requirements 8.6**
     - Unit example: `createQuest(...)` starts at `OriginPortal` — _Requirements: 8.1_
     - min 100 iterations for the property; run and confirm they pass
@@ -133,41 +133,41 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
 - [x] 7. Checkpoint — full domain layer verified
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Build the gothic dark-fantasy UI components (`src/components/grimoire/`)
-  - [~] 8.1 Implement `ManaBar.tsx`
+- [x] 8. Build the gothic dark-fantasy UI components (`src/components/grimoire/`)
+  - [x] 8.1 Implement `ManaBar.tsx`
     - Props `cumulative`, `limit`, `label`, optional icon; call `computeManaBar`; on `Err` show field-specific message, on `Ok` render fill width from `usagePercentage` (visual fill clamped to 100%, numeric readout uncapped)
     - Tint by status: `normal` calm arcane blue, `warning` amber glow (≥80%), `limitReached` pulsing crimson (≥100%) via Tailwind keyframes; use `lucide-react` icon
     - Consumes domain only; no local math
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 7.2, 7.3; Design: ManaBar_
 
-  - [~] 8.2 Implement `StagePortals.tsx`
+  - [x] 8.2 Implement `StagePortals.tsx`
     - Map `QuestStage` → three arcane portals (Origin Portal → Customs Abyss → Guild Delivery), highlighting the active stage with glow; `lucide-react` icons
     - _Requirements: 8.1, 8.2, 8.3; Design: StagePortals_
 
-  - [~] 8.3 Implement `QuestCard.tsx`
+  - [x] 8.3 Implement `QuestCard.tsx`
     - Render one `Quest` (label, current stage via `StagePortals`) with an "Advance" action that calls `advanceQuest(quest.stage)`; update state only on `Ok`, surface the validation message on `Err` without mutating the stage
     - _Requirements: 8.2, 8.3, 8.4, 8.5; Design: QuestCard_
 
-  - [~] 8.4 Implement `QuestLog.tsx`
+  - [x] 8.4 Implement `QuestLog.tsx`
     - Render the collection of `QuestCard`s as adventurer's-log entries; pass through advance handlers
     - _Requirements: 8.1, 8.2, 8.3, 8.4; Design: QuestLog_
 
-  - [~] 8.5 Implement `AlchemistCalculator.tsx`
+  - [x] 8.5 Implement `AlchemistCalculator.tsx`
     - Form for `Package_Weight` and `FOB_Value`; on change call `calculateCustoms(input, config)`; on `Ok` render regime badge (4x4 vs General) and tariff/VAT/flat-fee/total breakdown; on `Err` show field-specific message
     - Embed two `ManaBar`s (annual weight, annual budget) fed by cumulative totals
     - _Requirements: 1.1, 1.2, 1.3, 2.4, 3.4, 4.2, 4.4, 4.5; Design: AlchemistCalculator_
 
-  - [~] 8.6 Implement `GrimoireLayout.tsx`
+  - [x] 8.6 Implement `GrimoireLayout.tsx`
     - Top-level atmospheric spellbook shell with background glow; hold client state (quests, calculator inputs, cumulative annual totals) and pass values down to `QuestLog` and `AlchemistCalculator`
     - _Requirements: 8.1, 5.1, 6.1; Design: GrimoireLayout_
 
-- [ ] 9. Wire the UI into the Next.js app
-  - [~] 9.1 Compose the grimoire in `src/app/page.tsx`
+- [x] 9. Wire the UI into the Next.js app
+  - [x] 9.1 Compose the grimoire in `src/app/page.tsx`
     - Render `GrimoireLayout` as the home page; seed initial quests and cumulative totals; ensure components import only from `src/domain/customs` (barrel)
     - Confirm the app builds with the Next.js build step
     - _Requirements: 1.1, 5.1, 6.1, 8.1; Design: Architecture / Layered Data Flow_
 
-- [~] 10. Final checkpoint — full build and test pass
+- [x] 10. Final checkpoint — full build and test pass
   - Ensure all tests pass and the project builds, ask the user if questions arise.
 
 ## Notes

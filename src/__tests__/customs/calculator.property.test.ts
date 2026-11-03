@@ -18,8 +18,10 @@ const fourByFourInput = fc.record({
   fobValue: fc.double({ min: 0, max: 400, noNaN: true }),
 });
 
-// General-qualifying inputs: at least one of weight > 4 or fob > 400,
-// both finite and non-negative.
+// General-qualifying inputs: at least one of weight > 4 or fob > 400, both
+// finite and non-negative. The STRICT `>` filter guarantees the exact boundary
+// [weightLimit, fobLimit] (which is inclusive -> FourByFour) can never slip in,
+// even under shrinking.
 const generalInput = fc
   .record({
     packageWeight: fc.double({ min: 0, max: 1e6, noNaN: true }),

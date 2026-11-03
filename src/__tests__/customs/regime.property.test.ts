@@ -15,21 +15,29 @@ const config: CustomsConfig = DEFAULT_CUSTOMS_CONFIG;
 const inRangeWeight = fc.double({ min: 0, max: config.weightLimit, noNaN: true });
 const inRangeFob = fc.double({ min: 0, max: config.fobLimit, noNaN: true });
 
-// A finite, non-negative value that exceeds a limit.
-const overWeight = fc.double({
-  min: config.weightLimit + Number.EPSILON,
-  max: 1e6,
-  noNaN: true,
-});
-const overFob = fc.double({
-  min: config.fobLimit + Number.EPSILON,
-  max: 1e9,
-  noNaN: true,
-});
+// A finite, non-negative value that STRICTLY exceeds a limit. minExcluded keeps
+// the generator off the boundary, and the filter guarantees shrinking can never
+// land back on exactly WEIGHT_LIMIT / FOB_LIMIT.
+const overWeight = fc
+  .double({ min: config.weightLimit, max: 1e6, noNaN: true, minExcluded: true })
+  .filter((v) => v > config.weightLimit);
+const overFob = fc
+  .double({ min: config.fobLimit, max: 1e9, noNaN: true, minExcluded: true })
+  .filter((v) => v > config.fobLimit);
 
 describe("regime selection — property based", () => {
   // Feature: customs-grimoire, Property 1: Regime boundary selection — in-range -> FourByFour; over either limit -> General
   it("Property 1: selects FourByFour in range and General over either limit", () => {
+    // Exact boundary [weightLimit, fobLimit] is inclusive -> FourByFour.
+    const boundary = selectRegime(
+      { packageWeight: config.weightLimit, fobValue: config.fobLimit },
+      config
+    );
+    expect(boundary.ok).toBe(true);
+    if (boundary.ok) {
+      expect(boundary.value).toBe(ImportRegime.FourByFour);
+    }
+
     // In range -> FourByFour
     fc.assert(
       fc.property(inRangeWeight, inRangeFob, (packageWeight, fobValue) => {
