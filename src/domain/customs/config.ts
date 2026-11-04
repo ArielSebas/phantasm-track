@@ -17,7 +17,7 @@ export const CRITICAL_THRESHOLD = 100; // percent
 // --- Representative, configurable rates (fractions). Override per policy. ---
 export const DEFAULT_AD_VALOREM_RATE = 0.1; // 10%
 export const DEFAULT_VAT_RATE = 0.15; // 15%
-export const DEFAULT_FLAT_FEE = 42; // USD courier/customs fee
+export const DEFAULT_FLAT_FEE = 20; // USD — Ecuador's fixed $20 4x4 (SENAE) fee
 
 // --- Annual quota limits consumed by the Mana Bars ---
 export const ANNUAL_WEIGHT_LIMIT = 48; // kg  (annual cumulative weight quota)

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Sparkles, ShieldAlert, Flame, type LucideProps } from "lucide-react";
+import { Sparkles, ShieldAlert, Skull, type LucideProps } from "lucide-react";
 import {
   computeManaBar,
   type ManaBarStatus,
@@ -11,11 +11,15 @@ export interface ManaBarProps {
   readonly label: string;
   readonly cumulative: number;
   readonly limit: number;
+  /** Optional subtitle badge shown under the label (e.g. SENAE rule note). */
+  readonly note?: string;
   /** Unit suffix shown in the readout, e.g. "kg" or "USD". */
   readonly unit?: string;
   /** When true, render the readout as a currency amount ($) rather than a unit suffix. */
   readonly currency?: boolean;
   readonly icon?: ComponentType<LucideProps>;
+  /** Optional localized status labels; defaults to English Stable/Waning/Breach. */
+  readonly statusLabels?: Partial<Record<ManaBarStatus, string>>;
 }
 
 const STATUS_STYLES: Record<
@@ -55,7 +59,7 @@ const STATUS_STYLES: Record<
     glow: "animate-critical-pulse",
     badge: "bg-red-600/20 text-red-200 ring-1 ring-inset ring-red-400/60",
     text: "text-red-200",
-    statusIcon: Flame,
+    statusIcon: Skull,
   },
 };
 
@@ -77,9 +81,11 @@ export function ManaBar({
   label,
   cumulative,
   limit,
+  note,
   unit,
   currency = false,
   icon: Icon,
+  statusLabels,
 }: ManaBarProps) {
   const result = computeManaBar(cumulative, limit);
 
@@ -100,6 +106,7 @@ export function ManaBar({
   const { usagePercentage, status } = result.value;
   const styles = STATUS_STYLES[status];
   const StatusIcon = styles.statusIcon;
+  const statusLabel = statusLabels?.[status] ?? styles.label;
   const fillWidth = Math.min(100, Math.max(0, usagePercentage));
 
   return (
@@ -117,9 +124,15 @@ export function ManaBar({
           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-widest ${styles.badge}`}
         >
           <StatusIcon className="h-3 w-3" aria-hidden />
-          {styles.label}
+          {statusLabel}
         </span>
       </div>
+
+      {note ? (
+        <p className="mb-2 rounded-md bg-black/30 px-2 py-1 text-[0.65rem] leading-snug text-foreground/55 ring-1 ring-inset ring-border-arcane/40">
+          {note}
+        </p>
+      ) : null}
 
       <div
         className={`relative h-4 w-full overflow-hidden rounded-full border bg-black/60 ${styles.track}`}

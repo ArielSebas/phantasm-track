@@ -3,10 +3,11 @@
 import type { ComponentType } from "react";
 import { Package, Skull, Castle, Check, type LucideProps } from "lucide-react";
 import { QuestStage, QUEST_SEQUENCE } from "@/domain/customs";
+import { DICTIONARIES, type Lang } from "./i18n";
 
 interface PortalMeta {
   readonly stage: QuestStage;
-  readonly title: string;
+  readonly titleKey: "portalOrigin" | "portalAbyss" | "portalDelivery";
   readonly icon: ComponentType<LucideProps>;
   readonly activeColor: string;
   readonly activeGlow: string;
@@ -15,21 +16,21 @@ interface PortalMeta {
 const PORTALS: readonly PortalMeta[] = [
   {
     stage: QuestStage.OriginPortal,
-    title: "Origin Portal",
+    titleKey: "portalOrigin",
     icon: Package,
     activeColor: "text-portal-origin",
     activeGlow: "shadow-[0_0_24px_-2px_var(--portal-origin)]",
   },
   {
     stage: QuestStage.CustomsAbyss,
-    title: "Customs Abyss",
+    titleKey: "portalAbyss",
     icon: Skull,
     activeColor: "text-portal-abyss",
     activeGlow: "shadow-[0_0_24px_-2px_var(--portal-abyss)]",
   },
   {
     stage: QuestStage.GuildDelivery,
-    title: "Guild Delivery",
+    titleKey: "portalDelivery",
     icon: Castle,
     activeColor: "text-portal-delivery",
     activeGlow: "shadow-[0_0_24px_-2px_var(--portal-delivery)]",
@@ -38,6 +39,7 @@ const PORTALS: readonly PortalMeta[] = [
 
 export interface StagePortalsProps {
   readonly current: QuestStage;
+  readonly lang: Lang;
 }
 
 /**
@@ -45,8 +47,9 @@ export interface StagePortalsProps {
  * Guild Delivery, highlighting the active stage and marking completed stages.
  * Maps QuestStage to portal visuals; performs no transition logic.
  */
-export function StagePortals({ current }: StagePortalsProps) {
+export function StagePortals({ current, lang }: StagePortalsProps) {
   const currentIndex = QUEST_SEQUENCE.indexOf(current);
+  const d = DICTIONARIES[lang];
 
   return (
     <div className="flex items-center justify-between gap-1">
@@ -84,7 +87,7 @@ export function StagePortals({ current }: StagePortalsProps) {
                       : "text-foreground/30",
                 ].join(" ")}
               >
-                {portal.title}
+                {d[portal.titleKey]}
               </span>
             </div>
 

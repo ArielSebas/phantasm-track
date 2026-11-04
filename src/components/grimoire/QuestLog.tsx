@@ -1,31 +1,42 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookOpen, Filter, Ghost } from "lucide-react";
+import { BookOpen, Filter, Ghost, RotateCcw } from "lucide-react";
 import { ImportRegime, QuestStage } from "@/domain/customs";
 import type { QuestEntry } from "./types";
 import { QuestCard } from "./QuestCard";
+import { DICTIONARIES, tr, type Lang } from "./i18n";
 
 type QuestFilter = "all" | "fourByFour" | "general" | "delivered";
 
 export interface QuestLogProps {
   readonly quests: readonly QuestEntry[];
+  readonly lang: Lang;
   readonly onAdvance: (id: string, nextStage: QuestEntry["stage"]) => void;
+  readonly onDelete: (id: string) => void;
+  readonly onReset: () => void;
 }
-
-const FILTERS: readonly { id: QuestFilter; label: string }[] = [
-  { id: "all", label: "All Quests" },
-  { id: "fourByFour", label: "4x4 Exempt" },
-  { id: "general", label: "General" },
-  { id: "delivered", label: "Delivered" },
-];
 
 /**
  * Adventurer's guild log. Lists active Quests as log entries and lets the
- * seeker filter them. Add / advance are owned by the parent and passed in.
+ * seeker filter them. Add / advance / delete / reset are owned by the parent.
  */
-export function QuestLog({ quests, onAdvance }: QuestLogProps) {
+export function QuestLog({
+  quests,
+  lang,
+  onAdvance,
+  onDelete,
+  onReset,
+}: QuestLogProps) {
   const [filter, setFilter] = useState<QuestFilter>("all");
+  const d = DICTIONARIES[lang];
+
+  const FILTERS: readonly { id: QuestFilter; label: string }[] = [
+    { id: "all", label: d.filterAll },
+    { id: "fourByFour", label: d.filterFourByFour },
+    { id: "general", label: d.filterGeneral },
+    { id: "delivered", label: d.filterDelivered },
+  ];
 
   const visible = useMemo(() => {
     switch (filter) {
@@ -46,11 +57,11 @@ export function QuestLog({ quests, onAdvance }: QuestLogProps) {
         <div className="flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-arcane-violet" aria-hidden />
           <h2 className="font-serif text-lg font-semibold tracking-wide text-foreground">
-            Adventurer&apos;s Guild Log
+            {d.logTitle}
           </h2>
         </div>
         <span className="rounded-full bg-arcane-violet/10 px-2.5 py-0.5 font-mono text-xs text-arcane-violet ring-1 ring-inset ring-arcane-violet/30">
-          {quests.length} active
+          {tr(d.activeCount, { n: quests.length })}
         </span>
       </header>
 
@@ -71,19 +82,31 @@ export function QuestLog({ quests, onAdvance }: QuestLogProps) {
             {f.label}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={onReset}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-portal-delivery/40 bg-portal-delivery/10 px-3 py-1 text-xs font-semibold text-emerald-200 transition-colors hover:bg-portal-delivery/20"
+        >
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+          {d.resetDemo}
+        </button>
       </div>
 
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border-arcane/50 py-12 text-center">
           <Ghost className="h-8 w-8 text-foreground/20 animate-rune-flicker" aria-hidden />
-          <p className="text-sm text-foreground/40">
-            No quests haunt this page of the log.
-          </p>
+          <p className="text-sm text-foreground/40">{d.emptyLog}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
           {visible.map((quest) => (
-            <QuestCard key={quest.id} quest={quest} onAdvance={onAdvance} />
+            <QuestCard
+              key={quest.id}
+              quest={quest}
+              lang={lang}
+              onAdvance={onAdvance}
+              onDelete={onDelete}
+            />
           ))}
         </div>
       )}
