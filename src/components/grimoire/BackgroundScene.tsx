@@ -174,7 +174,10 @@ export function BackgroundScene({
       {/* LEFT FULL-HEIGHT GUARDIAN: Anatomical Skeleton Courier */}
       <div
         className={[
-          "hidden xl:flex fixed left-0 top-0 bottom-0 w-[300px] 2xl:w-[350px] h-screen items-stretch justify-start overflow-visible transition-all duration-700",
+          "hidden xl:flex fixed top-0 bottom-0 h-screen items-stretch justify-start overflow-visible transition-all duration-700",
+          isForeground
+            ? "left-0 w-[300px] 2xl:w-[350px]"
+            : "-left-12 2xl:-left-8 w-[310px] 2xl:w-[345px]",
           hideSkeletonInFg
             ? "opacity-0 -translate-x-24"
             : isForeground
@@ -187,7 +190,7 @@ export function BackgroundScene({
         <svg
           viewBox="0 0 320 960"
           fill="none"
-          preserveAspectRatio="xMinYMid slice"
+          preserveAspectRatio="xMinYMid meet"
           className="h-full w-full overflow-visible drop-shadow-[0_0_25px_rgba(110,168,254,0.24)]"
         >
           <defs>
@@ -365,7 +368,10 @@ export function BackgroundScene({
       {/* RIGHT FULL-HEIGHT GUARDIAN: Sinister Pumpkin-Headed Skeleton Lord */}
       <div
         className={[
-          "hidden xl:flex fixed right-0 top-0 bottom-0 w-[300px] 2xl:w-[350px] h-screen items-stretch justify-end overflow-visible transition-all duration-700",
+          "hidden xl:flex fixed top-0 bottom-0 h-screen items-stretch justify-end overflow-visible transition-all duration-700",
+          isForeground
+            ? "right-0 w-[300px] 2xl:w-[350px]"
+            : "-right-12 2xl:-right-8 w-[310px] 2xl:w-[345px]",
           hidePumpkinInFg
             ? "opacity-0 translate-x-24"
             : isForeground
@@ -378,7 +384,7 @@ export function BackgroundScene({
         <svg
           viewBox="0 0 320 960"
           fill="none"
-          preserveAspectRatio="xMaxYMid slice"
+          preserveAspectRatio="xMaxYMid meet"
           className="h-full w-full overflow-visible drop-shadow-[0_0_28px_rgba(245,158,11,0.24)]"
         >
           <defs>

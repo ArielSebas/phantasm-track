@@ -54,29 +54,29 @@
 
   /* Custom animation tokens (consumed via `animate-*` utilities) */
   --animate-arcane-glow: arcane-glow 3s ease-in-out infinite;
-  --animate-warning-glow: warning-glow 1.8s ease-in-out infinite;
+  --animate-warning-glow: warning-glow 1.4s ease-in-out infinite;
   --animate-critical-pulse: critical-pulse 1s ease-in-out infinite;
   --animate-rune-flicker: rune-flicker 4s steps(1, end) infinite;
   --animate-bat-flap: bat-flap 0.9s ease-in-out infinite;
-  --animate-float-drift: float-drift 6s ease-in-out infinite;
+  --animate-float-drift: float-drift 4s ease-in-out infinite;
   --animate-banner-pulse: banner-pulse 2.4s ease-in-out infinite;
   --animate-zombie-rise: zombie-rise 3.5s ease-in-out infinite;
 
   /* One-time entry-scene animations: run exactly ONCE on load, then freeze. */
-  --animate-courier-deliver-once: courier-deliver-once 1.8s ease-out 1 forwards;
-  --animate-pumpkin-receive-once: pumpkin-receive-once 1.8s ease-out 1 forwards;
+  --animate-courier-deliver-once: courier-deliver-once 1.4s ease-out 1 forwards;
+  --animate-pumpkin-receive-once: pumpkin-receive-once 1.4s ease-out 1 forwards;
 
-  /* Language toast full lifecycle: pop in, hold, fade out over 3.5s (once). */
-  --animate-toast-life: toast-life 3.5s ease-in-out 1 forwards;
+  /* Language toast full lifecycle: pop in, hold, fade out over 4s (once). */
+  --animate-toast-life: toast-life 4s ease-in-out 1 forwards;
 
-  /* Quest-lifecycle cinematic helpers (run during the ~3.8s foreground). */
+  /* Quest-lifecycle cinematic helpers (run during the ~3.4s foreground). */
   --animate-loot-drop: loot-drop 1.4s ease-in 1 forwards;
   --animate-flap-fold: flap-fold 0.9s ease-out 0.9s 1 forwards;
   --animate-seal-stamp: seal-stamp 0.5s ease-out 1.5s 1 both;
-  --animate-scanner-beam: scanner-beam 1.6s ease-in-out infinite;
+  --animate-scanner-beam: scanner-beam 1.4s ease-in-out infinite;
   --animate-spark-burst: spark-burst 1.2s ease-out infinite;
-  --animate-broom-sweep: broom-sweep 1.8s ease-in-out 1 forwards;
-  --animate-ash-scatter: ash-scatter 1.8s ease-out 1 forwards;
+  --animate-broom-sweep: broom-sweep 1.4s ease-in-out 1 forwards;
+  --animate-ash-scatter: ash-scatter 1.4s ease-out 1 forwards;
 
   /* --------------------------------------------------------------- */
   /* Articulated guardian choreography (torso/arm <g> groups).        */
@@ -100,7 +100,7 @@
   /* Stage C "customs": conveyor rollers spin continuously. */
   --animate-roller-spin: roller-spin 1.1s linear infinite;
   /* Stage C "customs": the parcel glides left->right along the belt. */
-  --animate-belt-move-parcel: belt-move-parcel 2.6s ease-in-out infinite;
+  --animate-belt-move-parcel: belt-move-parcel 2.4s ease-in-out infinite;
 
   /* Stage D "delivered": the parcel travels from skeleton hand to claw. */
   --animate-parcel-handoff-transfer: parcel-handoff-transfer 2.4s ease-in-out infinite;
@@ -247,11 +247,11 @@
     opacity: 0;
     transform: translateY(-16px) scale(0.96);
   }
-  12% {
+  4% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-  80% {
+  93% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }

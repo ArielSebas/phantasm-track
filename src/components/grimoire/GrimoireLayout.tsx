@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Scroll, Coins, Sparkles, Moon, X } from "lucide-react";
@@ -85,8 +85,11 @@ export function GrimoireLayout() {
   // Language toast: shown on load and on every switch. `toastSeq` is a trigger
   // token — bumping it replays the pop-in/fade animation and resets the timer;
   // `toastVisible` controls mounting so the toast unmounts after ~3.5s.
-  const [toastVisible, setToastVisible] = useState(true);
+  const [toastVisible, setToastVisible] = useState(false);
   const [toastSeq, setToastSeq] = useState(0);
+  // Spotlight mode: dims the page and pulses a ring around the language switch
+  // for the lifetime of the welcome toast.
+  const [spotlight, setSpotlight] = useState(false);
   // Cinematic handoff trigger: bumping this replays the foreground sequence.
   const [triggerKey, setTriggerKey] = useState(0);
   // Which cinematic to play. Starts as the macabre "welcome" ritual on every
@@ -197,9 +200,13 @@ export function GrimoireLayout() {
 
   const replayHandoff = useCallback(() => setTriggerKey((k) => k + 1), []);
 
-  const dismissToast = useCallback(() => setToastVisible(false), []);
+  const dismissToast = useCallback(() => {
+    setToastVisible(false);
+    setSpotlight(false);
+  }, []);
 
   const toggleLang = useCallback(() => {
+    setSpotlight(false);
     setLang((prev) => (prev === "es" ? "en" : "es"));
     // Re-trigger the toast in the newly selected language on every click.
     setToastVisible(true);
@@ -209,8 +216,20 @@ export function GrimoireLayout() {
   // Auto-dismiss the toast ~3.5s after each trigger. Re-running on `toastSeq`
   // clears the previous timer, so rapid clicks reset the countdown cleanly.
   useEffect(() => {
+    const welcomeWait = window.setTimeout(() => {
+      setToastVisible(true);
+      setSpotlight(true);
+      setToastSeq((n) => n + 1);
+    }, 4300);
+    return () => window.clearTimeout(welcomeWait);
+  }, []);
+
+  useEffect(() => {
     if (!toastVisible) return;
-    const t = window.setTimeout(() => setToastVisible(false), 3500);
+    const t = window.setTimeout(() => {
+      setToastVisible(false);
+      setSpotlight(false);
+    }, 4000);
     return () => window.clearTimeout(t);
   }, [toastVisible, toastSeq]);
 
@@ -236,8 +255,16 @@ export function GrimoireLayout() {
 
       {/* Language toast — shown on load and on every switch, in the active lang.
           `key={toastSeq}` remounts it so the pop-in/fade animation replays. */}
+      {spotlight ? (
+        <div
+          aria-hidden
+          onClick={dismissToast}
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px]"
+        />
+      ) : null}
+
       {toastVisible ? (
-        <div className="pointer-events-none fixed inset-x-0 top-4 z-30 flex justify-center px-4">
+        <div className="pointer-events-none fixed inset-x-0 top-4 z-[60] flex justify-center px-4">
           <div
             key={toastSeq}
             className="pointer-events-auto flex max-w-xl animate-toast-life items-center gap-3 rounded-2xl border border-orange-400/50 bg-gradient-to-r from-orange-950/90 via-arcane-violet/30 to-orange-950/90 px-4 py-2.5 shadow-xl backdrop-blur-sm"
@@ -257,11 +284,31 @@ export function GrimoireLayout() {
         </div>
       ) : null}
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* While spotlighted, the wrapper drops its z-index so the header can
+          escape to the root stacking context and sit above the z-40 backdrop. */}
+      <div
+        className={[
+          "relative mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8 xl:px-56 2xl:px-64",
+          spotlight ? "" : "z-10",
+        ].join(" ")}
+      >
         {/* Ornate gothic header card with flying bats + sleek language pill */}
-        <header className="relative mb-8 rounded-2xl border border-border-arcane/60 bg-surface/40 px-4 py-6 text-center backdrop-blur-sm">
-          {/* Top-right controls: replay-handoff + feedback + language pill */}
-          <div className="absolute right-3 top-3 z-20 flex flex-wrap items-center justify-end gap-2">
+        <header
+          className={[
+            "relative mb-8 rounded-2xl border border-border-arcane/60 bg-surface/40 px-4 py-6 text-center",
+            // backdrop-filter creates a stacking context that would trap the
+            // switch below the overlay, so it is disabled during the spotlight.
+            spotlight ? "" : "backdrop-blur-sm",
+          ].join(" ")}
+        >
+          {/* Top-right controls: replay-handoff + feedback + language pill.
+              No z-index while spotlighted so only the switch escapes. */}
+          <div
+            className={[
+              "absolute right-3 top-3 flex flex-wrap items-center justify-end gap-2",
+              spotlight ? "" : "z-20",
+            ].join(" ")}
+          >
             <button
               type="button"
               onClick={replayHandoff}
@@ -280,7 +327,12 @@ export function GrimoireLayout() {
               type="button"
               onClick={toggleLang}
               aria-label={d.switchTo}
-              className="inline-flex items-center gap-1.5 rounded-full border border-arcane-violet/50 bg-gradient-to-r from-arcane-violet/25 to-arcane-blue/20 px-3 py-1.5 text-xs font-bold text-foreground shadow-[0_0_18px_-6px_rgba(167,139,250,0.9)] ring-1 ring-inset ring-arcane-violet/20 transition-all hover:from-arcane-violet/40 hover:shadow-[0_0_24px_-4px_rgba(167,139,250,1)] active:scale-95 sm:text-sm"
+              className={[
+                "inline-flex items-center gap-1.5 rounded-full border border-arcane-violet/50 bg-gradient-to-r from-arcane-violet/25 to-arcane-blue/20 px-3 py-1.5 text-xs font-bold text-foreground transition-all active:scale-95 sm:text-sm",
+                spotlight
+                  ? "relative z-50 animate-pulse ring-4 ring-amber-400 shadow-[0_0_35px_rgba(251,191,36,0.95)]"
+                  : "shadow-[0_0_18px_-6px_rgba(167,139,250,0.9)] ring-1 ring-inset ring-arcane-violet/20 hover:from-arcane-violet/40 hover:shadow-[0_0_24px_-4px_rgba(167,139,250,1)]",
+              ].join(" ")}
             >
               <span
                 className={[
