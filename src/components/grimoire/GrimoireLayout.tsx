@@ -23,6 +23,7 @@ import { EcuadorFlag, USAFlag } from "./flags";
 import { SuggestionModal } from "./SuggestionModal";
 
 const STORAGE_KEY = "phantasm-track-state-v1";
+const CINEMATICS_KEY = "phantasm-track-cinematics-v1";
 
 interface PersistedState {
   readonly quests: QuestEntry[];
@@ -90,6 +91,8 @@ export function GrimoireLayout() {
   // Spotlight mode: dims the page and pulses a ring around the language switch
   // for the lifetime of the welcome toast.
   const [spotlight, setSpotlight] = useState(false);
+  // User preference: foreground cinematics on/off (persisted separately).
+  const [cinematicsEnabled, setCinematicsEnabled] = useState<boolean>(true);
   // Cinematic handoff trigger: bumping this replays the foreground sequence.
   const [triggerKey, setTriggerKey] = useState(0);
   // Which cinematic to play. Starts as the macabre "welcome" ritual on every
@@ -128,6 +131,13 @@ export function GrimoireLayout() {
     } catch {
       // Corrupt or unavailable storage — fall back to seed defaults silently.
     }
+    try {
+      if (window.localStorage.getItem(CINEMATICS_KEY) === "false") {
+        setCinematicsEnabled(false);
+      }
+    } catch {
+      // Ignore unavailable storage; cinematics stay enabled.
+    }
     setHydrated(true);
   }, []);
 
@@ -141,6 +151,18 @@ export function GrimoireLayout() {
       // Ignore quota / unavailable storage.
     }
   }, [hydrated, quests, lang, settings, nextId]);
+
+  const toggleCinematics = useCallback(() => {
+    setCinematicsEnabled((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(CINEMATICS_KEY, String(next));
+      } catch {
+        // Ignore quota / unavailable storage.
+      }
+      return next;
+    });
+  }, []);
 
   // Cumulative annual budget ($) consumed across all active quests. Weight is
   // NOT accumulated: SENAE 4x4 caps weight per-parcel, not per-year.
@@ -157,6 +179,7 @@ export function GrimoireLayout() {
       // Map the arrival stage to its cinematic:
       //   -> CustomsAbyss   = "customs"  (skull retains the parcel, inspection)
       //   -> GuildDelivery  = "delivered" (handoff to the Pumpkin Lord)
+      if (!cinematicsEnabled) return;
       if (nextStage === QuestStage.CustomsAbyss) {
         setSceneStage("customs");
         setTriggerKey((k) => k + 1);
@@ -165,7 +188,7 @@ export function GrimoireLayout() {
         setTriggerKey((k) => k + 1);
       }
     },
-    []
+    [cinematicsEnabled]
   );
 
   const handleInscribe = useCallback(
@@ -176,29 +199,35 @@ export function GrimoireLayout() {
       setQuests((prev) => [built.value, ...prev]);
       setNextId((n) => n + 1);
       // A freshly inscribed quest starts at OriginPortal -> packing cinematic.
+      if (!cinematicsEnabled) return;
       setSceneStage("packing");
       setTriggerKey((k) => k + 1);
     },
-    [nextId]
+    [nextId, cinematicsEnabled]
   );
 
   const handleDelete = useCallback((id: string) => {
     setQuests((prev) => prev.filter((q) => q.id !== id));
     // Banishing always plays the sweep cinematic; parcel ownership afterward is
     // derived from the remaining quests via `delivered`.
+    if (!cinematicsEnabled) return;
     setSceneStage("banished");
     setTriggerKey((k) => k + 1);
-  }, []);
+  }, [cinematicsEnabled]);
 
   const handleReset = useCallback(() => {
     setQuests(seedQuests());
     setNextId(1000);
     // Restoring the grimoire replays the macabre welcome ritual.
+    if (!cinematicsEnabled) return;
     setSceneStage("welcome");
     setTriggerKey((k) => k + 1);
-  }, []);
+  }, [cinematicsEnabled]);
 
-  const replayHandoff = useCallback(() => setTriggerKey((k) => k + 1), []);
+  const replayHandoff = useCallback(() => {
+    if (!cinematicsEnabled) return;
+    setTriggerKey((k) => k + 1);
+  }, [cinematicsEnabled]);
 
   const dismissToast = useCallback(() => {
     setToastVisible(false);
@@ -251,6 +280,7 @@ export function GrimoireLayout() {
         hasDeliveredParcel={delivered}
         triggerKey={triggerKey}
         lang={lang}
+        cinematicsEnabled={cinematicsEnabled}
       />
 
       {/* Language toast — shown on load and on every switch, in the active lang.
@@ -315,6 +345,21 @@ export function GrimoireLayout() {
               className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-gradient-to-r from-amber-500/20 to-orange-500/15 px-3 py-1.5 text-xs font-bold text-amber-100 shadow-[0_0_18px_-6px_rgba(245,158,11,0.9)] ring-1 ring-inset ring-amber-400/20 transition-all hover:from-amber-500/35 hover:shadow-[0_0_24px_-4px_rgba(245,158,11,1)] active:scale-95 sm:text-sm"
             >
               {d.playHandoff}
+            </button>
+            <button
+              type="button"
+              onClick={toggleCinematics}
+              aria-pressed={cinematicsEnabled}
+              title={d.cinematicsTooltip}
+              aria-label={d.cinematicsTooltip}
+              className={[
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold ring-1 ring-inset transition-all active:scale-95 sm:text-sm",
+                cinematicsEnabled
+                  ? "border-emerald-400/50 bg-gradient-to-r from-arcane-violet/25 to-emerald-500/20 text-emerald-100 ring-emerald-400/20 shadow-[0_0_18px_-6px_rgba(52,211,153,0.9)] hover:from-arcane-violet/40 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,1)]"
+                  : "border-slate-500/40 bg-slate-800/60 text-slate-400 ring-slate-500/10 hover:bg-slate-700/60",
+              ].join(" ")}
+            >
+              {cinematicsEnabled ? d.cinematicsOn : d.cinematicsOff}
             </button>
             <button
               type="button"

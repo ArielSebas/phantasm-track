@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export type SceneStage = "welcome" | "packing" | "customs" | "delivered" | "banished";
 
@@ -10,6 +10,8 @@ export interface BackgroundSceneProps {
   delivered?: boolean;
   triggerKey?: number;
   lang?: "es" | "en";
+  /** When false, the foreground cinematic never plays; guardians stay on the sides. */
+  cinematicsEnabled?: boolean;
 }
 
 const BANNERS: Record<SceneStage, { es: string; en: string; accent: string; durationMs: number }> = {
@@ -35,7 +37,7 @@ const BANNERS: Record<SceneStage, { es: string; en: string; accent: string; dura
     es: "🎃 ¡Entrega completada! El Señor Calabaza recibe su paquete",
     en: "🎃 Delivery complete! The Pumpkin Lord receives the parcel",
     accent: "border-emerald-400/70 bg-[#06241c]/95 text-emerald-100 shadow-[0_0_35px_rgba(52,211,153,0.45)]",
-    durationMs: 3800,
+    durationMs: 2900,
   },
   banished: {
     es: "🧹 ¡Misión desterrada! El Señor Calabaza barre los restos",
@@ -84,13 +86,30 @@ export function BackgroundScene({
   delivered = false,
   triggerKey = 0,
   lang = "es",
+  cinematicsEnabled = true,
 }: BackgroundSceneProps) {
-  const [isForeground, setIsForeground] = useState<boolean>(true);
+  const [foregroundActive, setIsForeground] = useState<boolean>(true);
+  // Derived so disabling takes effect on the very same render (no flash).
+  const isForeground = foregroundActive && cinematicsEnabled;
   const safeStage: SceneStage = BANNERS[sceneStage] ? sceneStage : "welcome";
   const meta = BANNERS[safeStage];
   const parcelWithPumpkin = hasDeliveredParcel ?? delivered;
 
+  // Read through a ref so re-enabling cinematics does not replay the last one.
+  const cinematicsRef = useRef(cinematicsEnabled);
+
+  // Declared before the timer effect so the ref is current when it runs.
   useEffect(() => {
+    cinematicsRef.current = cinematicsEnabled;
+    // Disabling instantly drops any running foreground cinematic.
+    if (!cinematicsEnabled) setIsForeground(false);
+  }, [cinematicsEnabled]);
+
+  useEffect(() => {
+    if (!cinematicsRef.current) {
+      setIsForeground(false);
+      return;
+    }
     setIsForeground(true);
     const timer = setTimeout(() => {
       setIsForeground(false);
@@ -149,19 +168,39 @@ export function BackgroundScene({
           60% { transform: translateY(18px) scale(1); opacity: 1; }
           85%, 100% { transform: translateY(42px) scale(0.4); opacity: 0; }
         }
-        @keyframes beltSlide {
-          0% { transform: translateX(-85px); }
-          50% { transform: translateX(0px); }
-          100% { transform: translateX(85px); }
+        @keyframes shoulderPlaceLeft {
+          0% { transform: rotate(-14deg); }
+          100% { transform: rotate(4deg); }
+        }
+        @keyframes customsParcelRide {
+          0% { transform: translate(-125px, -46px); }
+          25% { transform: translate(-85px, 0px); }
+          28% { transform: translate(-85px, 0px); }
+          100% { transform: translate(85px, 0px); }
         }
         @keyframes laserPulse {
           0%, 100% { opacity: 0.35; transform: scaleY(0.96); }
           50% { opacity: 0.95; transform: scaleY(1.03); }
         }
-        @keyframes handoffFlight {
-          0% { transform: translateX(-110px) translateY(6px) scale(0.92); }
-          50% { transform: translateX(0px) translateY(-14px) scale(1.06); }
-          100% { transform: translateX(110px) translateY(6px) scale(0.95); }
+        @keyframes handoffOnce {
+          0%, 16.7% { transform: translate(-56px, 2px) scale(0.95); }
+          41.7% { transform: translate(0px, -12px) scale(1.04); }
+          66.7% { transform: translate(56px, 2px) scale(0.95); }
+          100% { transform: translate(84px, 8px) scale(0.9); }
+        }
+        @keyframes handoffTrailFade {
+          0%, 60% { opacity: 0.75; }
+          70%, 100% { opacity: 0; }
+        }
+        @keyframes shoulderReleaseLeft {
+          0% { transform: rotate(-4deg); }
+          71% { transform: rotate(-14deg); }
+          100% { transform: rotate(6deg); }
+        }
+        @keyframes shoulderReceiveRight {
+          0%, 46% { transform: rotate(0deg); }
+          61.5% { transform: rotate(14deg); }
+          100% { transform: rotate(-8deg); }
         }
         @keyframes dustScatter {
           0% { transform: translate(0, 0) scale(1); opacity: 0.95; }
@@ -181,8 +220,12 @@ export function BackgroundScene({
           hideSkeletonInFg
             ? "opacity-0 -translate-x-24"
             : isForeground
-            ? safeStage === "packing" || safeStage === "customs"
-              ? "opacity-100 translate-x-[18vw]"
+            ? safeStage === "packing"
+              ? "opacity-100 translate-x-[31.5vw] 2xl:translate-x-[33vw]"
+              : safeStage === "customs"
+              ? "opacity-100 translate-x-[28.5vw] 2xl:translate-x-[30vw]"
+              : safeStage === "delivered"
+              ? "opacity-100 translate-x-[29.5vw] 2xl:translate-x-[31vw]"
               : "opacity-100 translate-x-[20vw]"
             : "opacity-90 translate-x-0",
         ].join(" ")}
@@ -285,12 +328,17 @@ export function BackgroundScene({
             </g>
 
             <g
+              key={`arm-${safeStage}-${triggerKey}`}
               style={{
                 transformOrigin: "138px 308px",
                 transformBox: "view-box",
                 animation: isForeground
                   ? safeStage === "packing"
                     ? "shoulderPackLeft 1.1s ease-in-out infinite"
+                    : safeStage === "customs"
+                    ? "shoulderPlaceLeft 0.9s ease-in-out 1 forwards"
+                    : safeStage === "delivered"
+                    ? "shoulderReleaseLeft 1.4s ease-in-out 1 forwards"
                     : "shoulderPivotLeft 1.6s ease-in-out infinite"
                   : "none",
               }}
@@ -377,6 +425,8 @@ export function BackgroundScene({
             : isForeground
             ? safeStage === "banished"
               ? "opacity-100 -translate-x-[24vw]"
+              : safeStage === "delivered"
+              ? "opacity-100 -translate-x-[29.5vw] 2xl:-translate-x-[31vw]"
               : "opacity-100 -translate-x-[20vw]"
             : "opacity-90 translate-x-0",
         ].join(" ")}
@@ -488,12 +538,15 @@ export function BackgroundScene({
             </g>
 
             <g
+              key={`parm-${safeStage}-${triggerKey}`}
               style={{
                 transformOrigin: "178px 308px",
                 transformBox: "view-box",
                 animation: isForeground
                   ? safeStage === "banished"
                     ? "shoulderSweepRight 0.9s ease-in-out infinite"
+                    : safeStage === "delivered"
+                    ? "shoulderReceiveRight 2.6s ease-in-out 1 forwards"
                     : "shoulderPivotRight 1.6s ease-in-out infinite"
                   : "none",
               }}
@@ -655,7 +708,12 @@ export function BackgroundScene({
 
             {safeStage === "customs" && (
               <svg viewBox="0 0 380 240" className="w-96 h-60 overflow-visible">
-                <g style={{ animation: "beltSlide 2.2s ease-in-out infinite" }}>
+                <g
+                  key={`parcel-${triggerKey}`}
+                  style={{
+                    animation: "customsParcelRide 3.6s ease-in-out 1 forwards",
+                  }}
+                >
                   <RuneParcel glow="customs" x={150} y={96} />
                 </g>
                 <path
@@ -720,15 +778,20 @@ export function BackgroundScene({
             {safeStage === "delivered" && (
               <svg viewBox="0 0 360 220" className="w-88 h-56 overflow-visible">
                 <path
-                  d="M55 120 Q180 65 305 120"
+                  d="M124 38 Q180 6 236 38"
                   fill="none"
                   stroke="#34d399"
                   strokeWidth="3"
                   strokeDasharray="8 6"
                   opacity="0.75"
+                  key={`trail-${triggerKey}`}
+                  style={{ animation: "handoffTrailFade 2.4s linear 1 forwards" }}
                 />
-                <g style={{ animation: "handoffFlight 2.2s ease-in-out infinite" }}>
-                  <RuneParcel glow="deliver" x={141} y={78} />
+                <g
+                  key={`handoff-${triggerKey}`}
+                  style={{ animation: "handoffOnce 2.4s ease-in-out 1 forwards" }}
+                >
+                  <RuneParcel glow="deliver" x={141} y={6} />
                 </g>
               </svg>
             )}

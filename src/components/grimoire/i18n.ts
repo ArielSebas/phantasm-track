@@ -24,6 +24,9 @@ export interface Dictionary {
   readonly playHandoff: string; // "🎬 Play Handoff" replay button
   readonly editionBadge: string; // "Ecuador Edition · SENAE 4x4 Rules"
   readonly feedbackButton: string; // "🦉 Feedback" header button
+  readonly cinematicsOn: string; // cinematics toggle (enabled)
+  readonly cinematicsOff: string; // cinematics toggle (disabled)
+  readonly cinematicsTooltip: string;
 
   // Suggestion / Raven Messenger modal
   readonly suggestTitle: string;
@@ -190,6 +193,9 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     playHandoff: "🎬 Ver Entrega",
     editionBadge: "Edición Ecuador · Reglas SENAE 4x4",
     feedbackButton: "🦉 Sugerencias",
+    cinematicsOn: "🎬 Animaciones: ON",
+    cinematicsOff: "🚫 Animaciones: OFF",
+    cinematicsTooltip: "Activar o desactivar las cinemáticas en primer plano",
     suggestTitle: "🦉 Cuervo Mensajero",
     suggestSubtitle:
       "Envía una idea, reporta un hechizo roto o comparte tu experiencia con couriers de Ecuador.",
@@ -351,6 +357,9 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     playHandoff: "🎬 Play Handoff",
     editionBadge: "Ecuador Edition · SENAE 4x4 Rules",
     feedbackButton: "🦉 Feedback",
+    cinematicsOn: "🎬 Animations: ON",
+    cinematicsOff: "🚫 Animations: OFF",
+    cinematicsTooltip: "Toggle foreground cinematic animations on or off",
     suggestTitle: "🦉 Raven Messenger",
     suggestSubtitle:
       "Send an idea, report a broken spell, or share your experience with Ecuador couriers.",
