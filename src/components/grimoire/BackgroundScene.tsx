@@ -182,11 +182,13 @@ export function BackgroundScene({
           0%, 100% { opacity: 0.35; transform: scaleY(0.96); }
           50% { opacity: 0.95; transform: scaleY(1.03); }
         }
+        /* --handoff-drop lowers the parcel so it rests on the outstretched hands
+           (set per breakpoint on the handoff <svg>; user units are pre-scale). */
         @keyframes handoffOnce {
-          0%, 16.7% { transform: translate(-56px, 2px) scale(0.95); }
-          41.7% { transform: translate(0px, -12px) scale(1.04); }
-          66.7% { transform: translate(56px, 2px) scale(0.95); }
-          100% { transform: translate(84px, 8px) scale(0.9); }
+          0%, 16.7% { transform: translate(-56px, calc(2px + var(--handoff-drop, 0px))) scale(0.95); }
+          41.7% { transform: translate(0px, calc(-12px + var(--handoff-drop, 0px))) scale(1.04); }
+          66.7% { transform: translate(56px, calc(2px + var(--handoff-drop, 0px))) scale(0.95); }
+          100% { transform: translate(84px, calc(8px + var(--handoff-drop, 0px))) scale(0.9); }
         }
         @keyframes handoffTrailFade {
           0%, 60% { opacity: 0.75; }
@@ -213,20 +215,25 @@ export function BackgroundScene({
       {/* LEFT FULL-HEIGHT GUARDIAN: Anatomical Skeleton Courier */}
       <div
         className={[
-          "hidden xl:flex fixed top-0 bottom-0 h-screen items-stretch justify-start overflow-visible transition-all duration-700",
+          // Idle: sides only on xl+ (never covers inputs on phones). During any
+          // cinematic the guardian shows on every screen size.
+          isForeground ? "flex" : "hidden xl:flex",
+          "fixed top-0 bottom-0 h-screen items-stretch justify-start overflow-visible transition-all duration-700",
           isForeground
-            ? "left-0 w-[300px] 2xl:w-[350px]"
+            ? "left-0 w-[130px] sm:w-[180px] xl:w-[300px] 2xl:w-[350px]"
             : "-left-12 2xl:-left-8 w-[310px] 2xl:w-[345px]",
+          // Below xl the hand travels to the viewport centre (50vw minus the
+          // hand offset and half the parcel gap); xl+ keeps the vw offsets.
           hideSkeletonInFg
             ? "opacity-0 -translate-x-24"
             : isForeground
             ? safeStage === "packing"
-              ? "opacity-100 translate-x-[31.5vw] 2xl:translate-x-[33vw]"
+              ? "opacity-100 translate-x-[calc(50vw_-_122px)] sm:translate-x-[calc(50vw_-_167px)] xl:translate-x-[31.5vw] 2xl:translate-x-[33vw]"
               : safeStage === "customs"
-              ? "opacity-100 translate-x-[28.5vw] 2xl:translate-x-[30vw]"
+              ? "opacity-100 translate-x-[calc(50vw_-_137px)] sm:translate-x-[calc(50vw_-_183px)] xl:translate-x-[28.5vw] 2xl:translate-x-[30vw]"
               : safeStage === "delivered"
-              ? "opacity-100 translate-x-[29.5vw] 2xl:translate-x-[31vw]"
-              : "opacity-100 translate-x-[20vw]"
+              ? "opacity-100 translate-x-[calc(50vw_-_121px)] sm:translate-x-[calc(50vw_-_170px)] xl:translate-x-[29.5vw] 2xl:translate-x-[31vw]"
+              : "opacity-100 translate-x-0 xl:translate-x-[20vw]"
             : "opacity-90 translate-x-0",
         ].join(" ")}
       >
@@ -416,18 +423,19 @@ export function BackgroundScene({
       {/* RIGHT FULL-HEIGHT GUARDIAN: Sinister Pumpkin-Headed Skeleton Lord */}
       <div
         className={[
-          "hidden xl:flex fixed top-0 bottom-0 h-screen items-stretch justify-end overflow-visible transition-all duration-700",
+          isForeground ? "flex" : "hidden xl:flex",
+          "fixed top-0 bottom-0 h-screen items-stretch justify-end overflow-visible transition-all duration-700",
           isForeground
-            ? "right-0 w-[300px] 2xl:w-[350px]"
+            ? "right-0 w-[130px] sm:w-[180px] xl:w-[300px] 2xl:w-[350px]"
             : "-right-12 2xl:-right-8 w-[310px] 2xl:w-[345px]",
           hidePumpkinInFg
             ? "opacity-0 translate-x-24"
             : isForeground
             ? safeStage === "banished"
-              ? "opacity-100 -translate-x-[24vw]"
+              ? "opacity-100 -translate-x-[calc(50vw_-_162px)] sm:-translate-x-[calc(50vw_-_225px)] xl:-translate-x-[24vw]"
               : safeStage === "delivered"
-              ? "opacity-100 -translate-x-[29.5vw] 2xl:-translate-x-[31vw]"
-              : "opacity-100 -translate-x-[20vw]"
+              ? "opacity-100 -translate-x-[calc(50vw_-_121px)] sm:-translate-x-[calc(50vw_-_170px)] xl:-translate-x-[29.5vw] 2xl:-translate-x-[31vw]"
+              : "opacity-100 translate-x-0 xl:-translate-x-[20vw]"
             : "opacity-90 translate-x-0",
         ].join(" ")}
       >
@@ -647,7 +655,9 @@ export function BackgroundScene({
       {/* FOREGROUND CENTRAL STAGE PROPS & BANNER */}
       {isForeground && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-          <div className="relative flex items-center justify-center w-[460px] h-[260px]">
+          {/* Centre props scale down with the guardians on small screens; the
+              negative margins reclaim the layout space the scale frees up. */}
+          <div className="relative -my-[72px] flex h-[260px] w-[460px] scale-[0.45] items-center justify-center sm:-my-[52px] sm:scale-[0.6] xl:my-0 xl:scale-100">
             {safeStage === "welcome" && (
               <svg viewBox="0 0 260 220" className="w-64 h-56 overflow-visible">
                 <circle
@@ -776,7 +786,10 @@ export function BackgroundScene({
             )}
 
             {safeStage === "delivered" && (
-              <svg viewBox="0 0 360 220" className="w-88 h-56 overflow-visible">
+              <svg
+                viewBox="0 0 360 220"
+                className="w-88 h-56 overflow-visible [--handoff-drop:60px] sm:[--handoff-drop:38px] xl:[--handoff-drop:14px]"
+              >
                 <path
                   d="M124 38 Q180 6 236 38"
                   fill="none"
@@ -785,7 +798,10 @@ export function BackgroundScene({
                   strokeDasharray="8 6"
                   opacity="0.75"
                   key={`trail-${triggerKey}`}
-                  style={{ animation: "handoffTrailFade 2.4s linear 1 forwards" }}
+                  style={{
+                    animation: "handoffTrailFade 2.4s linear 1 forwards",
+                    transform: "translateY(var(--handoff-drop, 0px))",
+                  }}
                 />
                 <g
                   key={`handoff-${triggerKey}`}

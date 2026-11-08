@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "PhantasmTrack — GrimCourier | Arcane Customs & Quest Grimoire",
   description:
     "A gothic dark-fantasy grimoire for tracking cross-border customs quests, the Ecuador 4x4 rule, tariffs, and annual quota mana bars.",
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

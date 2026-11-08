@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#2a1646"/>
+      <stop offset="100%" stop-color="#07030f"/>
+    </radialGradient>
+    <radialGradient id="pk" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="55%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#9a3412"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="31" fill="url(#bg)" stroke="#7c3aed" stroke-width="2"/>
+  <circle cx="32" cy="35" r="22" fill="#f59e0b" opacity="0.18"/>
+  <path d="M33 13 C33 8 38 6 41 8 C38 10 37 12 37 15 Z" fill="#15803d" stroke="#052e16" stroke-width="1.2"/>
+  <ellipse cx="32" cy="36" rx="19" ry="16" fill="url(#pk)" stroke="#431407" stroke-width="1.6"/>
+  <path d="M25 22 C17 30 17 42 25 50 M32 21 V51 M39 22 C47 30 47 42 39 50" stroke="#431407" stroke-width="1.2" fill="none" opacity="0.6"/>
+  <polygon points="19,33 27,29 25,37" fill="#07030f"/>
+  <polygon points="45,33 37,29 39,37" fill="#07030f"/>
+  <polygon points="21,33 26,31 25,35" fill="#fef08a"/>
+  <polygon points="43,33 38,31 39,35" fill="#fef08a"/>
+  <path d="M21 41 L25 45 L28 41 L32 46 L36 41 L39 45 L43 41 L41 47 L32 49 L23 47 Z" fill="#07030f" stroke="#fbbf24" stroke-width="0.8"/>
+  <g fill="none" stroke="#34d399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 3.5 L32 9 M29.5 6 L34.5 6"/>
+    <path d="M9 52 L12 49 L9 46 M55 52 L52 49 L55 46"/>
+  </g>
+</svg>

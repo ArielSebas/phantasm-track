@@ -12,6 +12,7 @@ import { buildQuestEntry } from "./questFactory";
 import { ManaBar } from "./ManaBar";
 import { QuestLog } from "./QuestLog";
 import { TrackingOracle } from "./TrackingOracle";
+import { AmbientScenery } from "./AmbientScenery";
 import {
   AlchemistCalculator,
   DEFAULT_CALCULATOR_SETTINGS,
@@ -366,6 +367,9 @@ export function GrimoireLayout() {
         }}
       />
 
+      {/* Faint graveyard / bats / cobwebs backdrop (z-0, non-interactive) */}
+      <AmbientScenery />
+
       {/* 4-stage quest-lifecycle cinematic: foreground (z-50) ~2.4s, then z-0 */}
       <BackgroundScene
         sceneStage={sceneStage}
@@ -427,16 +431,18 @@ export function GrimoireLayout() {
         >
           {/* Top-right controls: replay-handoff + feedback + language pill.
               No z-index while spotlighted so only the switch escapes. */}
+          {/* Below lg it flows above the title (never overlaps it); from lg up it
+              floats in the top-right corner as before. */}
           <div
             className={[
-              "absolute right-3 top-3 flex flex-wrap items-center justify-end gap-2",
-              spotlight ? "" : "z-20",
+              "mb-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 lg:absolute lg:right-3 lg:top-3 lg:mb-0 lg:justify-end",
+              spotlight ? "relative" : "relative z-20",
             ].join(" ")}
           >
             <button
               type="button"
               onClick={replayHandoff}
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-gradient-to-r from-amber-500/20 to-orange-500/15 px-3 py-1.5 text-xs font-bold text-amber-100 shadow-[0_0_18px_-6px_rgba(245,158,11,0.9)] ring-1 ring-inset ring-amber-400/20 transition-all hover:from-amber-500/35 hover:shadow-[0_0_24px_-4px_rgba(245,158,11,1)] active:scale-95 sm:text-sm"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-gradient-to-r from-amber-500/20 to-orange-500/15 px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:py-1.5 sm:text-xs text-amber-100 shadow-[0_0_18px_-6px_rgba(245,158,11,0.9)] ring-1 ring-inset ring-amber-400/20 transition-all hover:from-amber-500/35 hover:shadow-[0_0_24px_-4px_rgba(245,158,11,1)] active:scale-95 lg:text-sm"
             >
               {d.playHandoff}
             </button>
@@ -447,7 +453,7 @@ export function GrimoireLayout() {
               title={d.cinematicsTooltip}
               aria-label={d.cinematicsTooltip}
               className={[
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold ring-1 ring-inset transition-all active:scale-95 sm:text-sm",
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:py-1.5 sm:text-xs ring-1 ring-inset transition-all active:scale-95 lg:text-sm",
                 cinematicsEnabled
                   ? "border-emerald-400/50 bg-gradient-to-r from-arcane-violet/25 to-emerald-500/20 text-emerald-100 ring-emerald-400/20 shadow-[0_0_18px_-6px_rgba(52,211,153,0.9)] hover:from-arcane-violet/40 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,1)]"
                   : "border-slate-500/40 bg-slate-800/60 text-slate-400 ring-slate-500/10 hover:bg-slate-700/60",
@@ -458,7 +464,7 @@ export function GrimoireLayout() {
             <button
               type="button"
               onClick={() => setSuggestOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-gradient-to-r from-emerald-500/20 to-teal-500/15 px-3 py-1.5 text-xs font-bold text-emerald-100 shadow-[0_0_18px_-6px_rgba(52,211,153,0.9)] ring-1 ring-inset ring-emerald-400/20 transition-all hover:from-emerald-500/35 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,1)] active:scale-95 sm:text-sm"
+              className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-gradient-to-r from-emerald-500/20 to-teal-500/15 px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:py-1.5 sm:text-xs text-emerald-100 shadow-[0_0_18px_-6px_rgba(52,211,153,0.9)] ring-1 ring-inset ring-emerald-400/20 transition-all hover:from-emerald-500/35 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,1)] active:scale-95 lg:text-sm"
             >
               {d.feedbackButton}
             </button>
@@ -467,7 +473,7 @@ export function GrimoireLayout() {
               onClick={toggleLang}
               aria-label={d.switchTo}
               className={[
-                "inline-flex items-center gap-1.5 rounded-full border border-arcane-violet/50 bg-gradient-to-r from-arcane-violet/25 to-arcane-blue/20 px-3 py-1.5 text-xs font-bold text-foreground transition-all active:scale-95 sm:text-sm",
+                "inline-flex items-center gap-1.5 rounded-full border border-arcane-violet/50 bg-gradient-to-r from-arcane-violet/25 to-arcane-blue/20 px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:py-1.5 sm:text-xs text-foreground transition-all active:scale-95 lg:text-sm",
                 spotlight
                   ? cinematicsEnabled
                     ? "relative z-50 animate-pulse ring-4 ring-amber-400 shadow-[0_0_35px_rgba(251,191,36,0.95)]"
@@ -503,8 +509,8 @@ export function GrimoireLayout() {
             <Moon className="h-4 w-4 animate-rune-flicker" aria-hidden />
             <span className="h-px w-16 bg-gradient-to-l from-transparent to-arcane-violet/60" />
           </div>
-          <h1 className="flex flex-wrap items-center justify-center gap-3 font-serif text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            <Scroll className="h-8 w-8 text-arcane-violet" aria-hidden />
+          <h1 className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-serif text-2xl font-bold tracking-tight text-foreground sm:gap-x-3 sm:text-4xl">
+            <Scroll className="h-6 w-6 text-arcane-violet sm:h-8 sm:w-8" aria-hidden />
             PhantasmTrack
             <span className="text-arcane-violet/70">·</span>
             <span className="bg-gradient-to-r from-arcane-violet via-arcane-blue to-portal-delivery bg-clip-text text-transparent">
