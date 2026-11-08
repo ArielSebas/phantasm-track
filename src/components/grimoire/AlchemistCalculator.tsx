@@ -197,18 +197,17 @@ export function AlchemistCalculator({
   // Raw draft for the manual $/lb rate, kept in sync with the persisted prop so
   // typing "4." or "4,5" is never rewritten mid-keystroke.
   const [rateUnit, setRateUnit] = useState<RateUnit>("lb");
-  const [rateDraft, setRateDraft] = useState(() => String(ratePerLb));
+  // Always display at most 2 decimals so floats like 1.3607771099992443 never show.
+  const fmtRate = (val: number) =>
+    Number.isFinite(val) ? Number(val.toFixed(2)).toString() : "0";
+  const [rateDraft, setRateDraft] = useState(() => fmtRate(ratePerLb));
   const [lastRate, setLastRate] = useState(ratePerLb);
   if (ratePerLb !== lastRate) {
     setLastRate(ratePerLb);
     // External change (e.g. rehydrated settings): resync unless it already matches.
     const draftPerLb = rateToPerLb(parseField(rateDraft) ?? 0, rateUnit);
     if (Math.abs(draftPerLb - ratePerLb) > 1e-9) {
-      setRateDraft(
-        rateUnit === "kg"
-          ? String(Number((ratePerLb * LBS_PER_KG).toFixed(2)))
-          : String(ratePerLb)
-      );
+      setRateDraft(fmtRate(rateUnit === "kg" ? ratePerLb * LBS_PER_KG : ratePerLb));
     }
   }
   const [label, setLabel] = useState("");

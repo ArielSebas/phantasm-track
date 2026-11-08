@@ -272,11 +272,22 @@ export function GrimoireLayout() {
   // Auto-dismiss the toast ~3.5s after each trigger. Re-running on `toastSeq`
   // clears the previous timer, so rapid clicks reset the countdown cleanly.
   useEffect(() => {
-    const welcomeWait = window.setTimeout(() => {
-      setToastVisible(true);
-      setSpotlight(true);
-      setToastSeq((n) => n + 1);
-    }, 4300);
+    // Read the persisted preference directly: state is not hydrated yet.
+    let cinematicsOn = true;
+    try {
+      cinematicsOn = window.localStorage.getItem(CINEMATICS_KEY) !== "false";
+    } catch {
+      // Unavailable storage: assume cinematics are on.
+    }
+    // Animations OFF: no welcome cinematic to wait for, show almost at once.
+    const welcomeWait = window.setTimeout(
+      () => {
+        setToastVisible(true);
+        setSpotlight(true);
+        setToastSeq((n) => n + 1);
+      },
+      cinematicsOn ? 4300 : 250
+    );
     return () => window.clearTimeout(welcomeWait);
   }, []);
 
@@ -285,8 +296,10 @@ export function GrimoireLayout() {
     const t = window.setTimeout(() => {
       setToastVisible(false);
       setSpotlight(false);
-    }, 4000);
+    }, cinematicsEnabled ? 4000 : 2500);
     return () => window.clearTimeout(t);
+    // cinematicsEnabled intentionally excluded: toggling must not restart the timer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toastVisible, toastSeq]);
 
   return (
@@ -312,7 +325,7 @@ export function GrimoireLayout() {
 
       {/* Language toast — shown on load and on every switch, in the active lang.
           `key={toastSeq}` remounts it so the pop-in/fade animation replays. */}
-      {spotlight ? (
+      {spotlight && cinematicsEnabled ? (
         <div
           aria-hidden
           onClick={dismissToast}
@@ -324,6 +337,8 @@ export function GrimoireLayout() {
         <div className="pointer-events-none fixed inset-x-0 top-4 z-[60] flex justify-center px-4">
           <div
             key={toastSeq}
+            // Match the faster 2.5s auto-dismiss so the fade-out completes.
+            style={cinematicsEnabled ? undefined : { animationDuration: "2.5s" }}
             className="pointer-events-auto flex max-w-xl animate-toast-life items-center gap-3 rounded-2xl border border-orange-400/50 bg-gradient-to-r from-orange-950/90 via-arcane-violet/30 to-orange-950/90 px-4 py-2.5 shadow-xl backdrop-blur-sm"
           >
             <span className="text-xs font-semibold leading-snug tracking-wide text-amber-100 sm:text-sm">
@@ -402,7 +417,9 @@ export function GrimoireLayout() {
               className={[
                 "inline-flex items-center gap-1.5 rounded-full border border-arcane-violet/50 bg-gradient-to-r from-arcane-violet/25 to-arcane-blue/20 px-3 py-1.5 text-xs font-bold text-foreground transition-all active:scale-95 sm:text-sm",
                 spotlight
-                  ? "relative z-50 animate-pulse ring-4 ring-amber-400 shadow-[0_0_35px_rgba(251,191,36,0.95)]"
+                  ? cinematicsEnabled
+                    ? "relative z-50 animate-pulse ring-4 ring-amber-400 shadow-[0_0_35px_rgba(251,191,36,0.95)]"
+                    : "relative z-50 ring-2 ring-amber-400/70 shadow-[0_0_14px_rgba(251,191,36,0.5)]"
                   : "shadow-[0_0_18px_-6px_rgba(167,139,250,0.9)] ring-1 ring-inset ring-arcane-violet/20 hover:from-arcane-violet/40 hover:shadow-[0_0_24px_-4px_rgba(167,139,250,1)]",
               ].join(" ")}
             >
