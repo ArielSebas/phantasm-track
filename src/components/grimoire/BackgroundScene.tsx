@@ -121,6 +121,23 @@ export function BackgroundScene({
   const hidePumpkinInFg =
     isForeground && (safeStage === "packing" || safeStage === "customs");
 
+  // y (px inside each prop SVG, 1:1 box) that must sit on the hand line.
+  const PROP_LINE_Y: Record<string, number> = {
+    welcome: 112, // centre of the rune seal
+    packing: 118, // box/table lowered to waist-hip level (was 150)
+    customs: 142, // conveyor belt lowered to waist-hip level (was 174)
+    delivered: 41, // centre of the handed-off parcel
+    banished: 131, // centre of the banished box
+  };
+  const propLineY = PROP_LINE_Y[safeStage] ?? 112;
+  // Extra rightward shift (prop units) so packing/customs props breathe away
+  // from the Skeleton's hand. Other stages stay centred.
+  const propShiftX = safeStage === "packing" ? 26 : safeStage === "customs" ? 22 : 0;
+  const propAnchor =
+    safeStage === "banished"
+      ? "50vh + 70 * var(--gs)" // broom / ground line (y≈550 of 960)
+      : "50vh - 108 * var(--gs)"; // outstretched-hand line (y≈372 of 960)
+
   const skeletonGlow: "origin" | "customs" =
     safeStage === "customs" ? "customs" : "origin";
 
@@ -654,10 +671,25 @@ export function BackgroundScene({
 
       {/* FOREGROUND CENTRAL STAGE PROPS & BANNER */}
       {isForeground && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-          {/* Centre props scale down with the guardians on small screens; the
-              negative margins reclaim the layout space the scale frees up. */}
-          <div className="relative -my-[72px] flex h-[260px] w-[460px] scale-[0.45] items-center justify-center sm:-my-[52px] sm:scale-[0.6] xl:my-0 xl:scale-100">
+        <div
+          className="pointer-events-none fixed inset-0 z-50 [--gw:130px] [--ps:0.45] sm:[--gw:180px] sm:[--ps:0.6] xl:[--gw:300px] xl:[--ps:1] 2xl:[--gw:350px]"
+          // --gs = rendered scale of the guardian SVGs (viewBox 320x960,
+          // "meet" inside a --gw wide, 100vh tall box).
+          style={
+            { "--gs": "min(calc(var(--gw) / 320), calc(100vh / 960))" } as React.CSSProperties
+          }
+        >
+          {/* Stage anchor: the props' "action line" is pinned to the guardians'
+              hand height (shoulder y=308, hands y≈372 of 960 => 108 units above
+              screen centre). Banished sits at the broom/ground line instead.
+              Props scale with --ps to match the guardian scale per breakpoint. */}
+          <div
+            className="absolute left-1/2 top-0"
+            style={{
+              transformOrigin: "50% 0",
+              transform: `translate(calc(-50% + ${propShiftX}px * var(--ps)), calc(${propAnchor} - ${propLineY}px * var(--ps))) scale(var(--ps))`,
+            }}
+          >
             {safeStage === "welcome" && (
               <svg viewBox="0 0 260 220" className="w-64 h-56 overflow-visible">
                 <circle
@@ -786,10 +818,7 @@ export function BackgroundScene({
             )}
 
             {safeStage === "delivered" && (
-              <svg
-                viewBox="0 0 360 220"
-                className="w-88 h-56 overflow-visible [--handoff-drop:60px] sm:[--handoff-drop:38px] xl:[--handoff-drop:14px]"
-              >
+              <svg viewBox="0 0 360 220" className="w-88 h-56 overflow-visible">
                 <path
                   d="M124 38 Q180 6 236 38"
                   fill="none"
@@ -798,10 +827,7 @@ export function BackgroundScene({
                   strokeDasharray="8 6"
                   opacity="0.75"
                   key={`trail-${triggerKey}`}
-                  style={{
-                    animation: "handoffTrailFade 2.4s linear 1 forwards",
-                    transform: "translateY(var(--handoff-drop, 0px))",
-                  }}
+                  style={{ animation: "handoffTrailFade 2.4s linear 1 forwards" }}
                 />
                 <g
                   key={`handoff-${triggerKey}`}
@@ -837,7 +863,8 @@ export function BackgroundScene({
 
           <div
             className={[
-              "mt-4 max-w-[88vw] rounded-2xl border px-6 py-3 font-serif text-base md:text-lg font-bold tracking-wide text-center transition-all",
+              // Pinned near the bottom, below the guardians' feet.
+              "absolute inset-x-0 bottom-6 mx-auto w-fit max-w-[88vw] rounded-2xl border px-4 py-2.5 font-serif text-sm font-bold tracking-wide text-center transition-all sm:bottom-10 sm:px-6 sm:py-3 sm:text-base md:text-lg",
               meta.accent,
             ].join(" ")}
           >
