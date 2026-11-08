@@ -120,13 +120,40 @@ export function GrimoireLayout() {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Partial<PersistedState>;
-        if (Array.isArray(parsed.quests)) setQuests(parsed.quests);
-        if (parsed.lang === "es" || parsed.lang === "en") setLang(parsed.lang);
-        if (parsed.settings) {
-          setSettings({ ...DEFAULT_CALCULATOR_SETTINGS, ...parsed.settings });
+        const data: unknown = JSON.parse(raw);
+        // Must be a plain object (not null / array / primitive).
+        if (data && typeof data === "object" && !Array.isArray(data)) {
+          const parsed = data as Partial<PersistedState>;
+          const isFiniteNum = (v: unknown): v is number =>
+            typeof v === "number" && Number.isFinite(v);
+          const stages: string[] = Object.values(QuestStage);
+          if (Array.isArray(parsed.quests)) {
+            // Keep only entries with the expected shape; drop corrupt ones.
+            const valid = (parsed.quests as unknown[]).filter((q): q is QuestEntry => {
+              if (!q || typeof q !== "object") return false;
+              const e = q as Record<string, unknown>;
+              return (
+                typeof e.id === "string" &&
+                typeof e.label === "string" &&
+                typeof e.stage === "string" &&
+                stages.includes(e.stage) &&
+                isFiniteNum(e.packageWeight) &&
+                isFiniteNum(e.fobValue) &&
+                isFiniteNum(e.total)
+              );
+            });
+            if (valid.length > 0 || parsed.quests.length === 0) setQuests(valid);
+          }
+          if (parsed.lang === "es" || parsed.lang === "en") setLang(parsed.lang);
+          if (
+            parsed.settings &&
+            typeof parsed.settings === "object" &&
+            !Array.isArray(parsed.settings)
+          ) {
+            setSettings({ ...DEFAULT_CALCULATOR_SETTINGS, ...parsed.settings });
+          }
+          if (isFiniteNum(parsed.nextId)) setNextId(parsed.nextId);
         }
-        if (typeof parsed.nextId === "number") setNextId(parsed.nextId);
       }
     } catch {
       // Corrupt or unavailable storage — fall back to seed defaults silently.

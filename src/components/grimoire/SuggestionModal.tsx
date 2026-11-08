@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Feather, Send, Sparkles, X, CheckCircle2, AlertTriangle } from "lucide-react";
 import type { Lang } from "./i18n";
 
@@ -12,11 +12,17 @@ export interface SuggestionModalProps {
 
 type CategoryKey = "idea" | "bug" | "courier" | "design";
 
+const SUBMIT_COOLDOWN_MS = 30_000;
+
 export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalProps) {
   const [alias, setAlias] = useState("");
   const [category, setCategory] = useState<CategoryKey>("idea");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  // Honeypot: real users never see or fill this field.
+  const [website, setWebsite] = useState("");
+  const lastSubmitRef = useRef(0);
+  const [cooldownMsg, setCooldownMsg] = useState(false);
 
   if (!open) return null;
 
@@ -31,11 +37,20 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || status === "sending") return;
+
+    // Client-side cooldown: block repeat submissions for 30 seconds.
+    const now = Date.now();
+    if (now - lastSubmitRef.current < SUBMIT_COOLDOWN_MS) {
+      setCooldownMsg(true);
+      return;
+    }
+    lastSubmitRef.current = now;
+    setCooldownMsg(false);
     setStatus("sending");
 
-    const cleanAlias = alias.trim() || (isEs ? "Viajero Anónimo" : "Anonymous Traveler");
-    const cleanMsg = message.trim();
+    const cleanAlias = (alias.trim() || (isEs ? "Viajero Anónimo" : "Anonymous Traveler")).slice(0, 60);
+    const cleanMsg = message.trim().slice(0, 800);
 
     try {
       // 1. Enviar al servidor interno (Notificación privada a Discord + Log local)
@@ -43,16 +58,17 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          alias: cleanAlias,
+          name: cleanAlias,
           category,
           message: cleanMsg,
+          website,
         }),
       });
 
       // 2. Enviar desde el navegador a Web3Forms (Pasa Cloudflare al 100% y llega directo a Gmail sin revelar tu correo)
       const web3Key = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
       const emailPromise =
-        web3Key && !web3Key.includes("PEGA_AQUI")
+        web3Key && !web3Key.includes("PEGA_AQUI") && !website.trim()
           ? fetch("https://api.web3forms.com/submit", {
               method: "POST",
               headers: {
@@ -178,12 +194,27 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
                 : "Send an idea, report a broken spell, or share your experience with Ecuador couriers."}
             </p>
 
+            {/* Honeypot: hidden from users and assistive tech, bots fill it. */}
+            <div className="sr-only" aria-hidden="true">
+              <label htmlFor="website">Website</label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-medium text-purple-200 mb-1">
                 {isEs ? "Tu nombre o alias (opcional)" : "Your name or alias (optional)"}
               </label>
               <input
                 type="text"
+                maxLength={60}
                 value={alias}
                 onChange={(e) => setAlias(e.target.value)}
                 placeholder={isEs ? "Ej. Alquimista de Quito" : "e.g. Quito Alchemist"}
@@ -221,6 +252,7 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
               <textarea
                 rows={4}
                 required
+                maxLength={800}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={
@@ -231,6 +263,14 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
                 className="w-full rounded-xl border border-purple-500/30 bg-[#090514]/90 p-3.5 text-sm text-purple-100 placeholder-purple-400/40 focus:border-purple-400 focus:outline-none"
               />
             </div>
+
+            {cooldownMsg && (
+              <p role="status" className="text-xs text-amber-300">
+                {isEs
+                  ? "El cuervo está descansando. Espera 30 segundos antes de enviar otro mensaje."
+                  : "The raven is resting. Wait 30 seconds before sending another message."}
+              </p>
+            )}
 
             {status === "error" && (
               <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-950/40 px-3 py-2 text-xs text-rose-200">
