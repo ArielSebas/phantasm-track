@@ -11,16 +11,20 @@ import type { QuestEntry } from "./types";
 import { buildQuestEntry } from "./questFactory";
 import { ManaBar } from "./ManaBar";
 import { QuestLog } from "./QuestLog";
+import { TrackingOracle } from "./TrackingOracle";
 import {
   AlchemistCalculator,
   DEFAULT_CALCULATOR_SETTINGS,
   type CalculatorSettings,
 } from "./AlchemistCalculator";
-import { DICTIONARIES, type Lang } from "./i18n";
+import { DICTIONARIES, tr, type Lang } from "./i18n";
 import { CobwebCorner, BatSwarm, JackOLantern } from "./decorations";
 import { BackgroundScene, type SceneStage } from "./BackgroundScene";
 import { EcuadorFlag, USAFlag } from "./flags";
-import { SuggestionModal } from "./SuggestionModal";
+import { SuggestionModal, type SuggestionPrefill } from "./SuggestionModal";
+
+/** Round to 2 decimals so stored figures never carry long float tails. */
+const round2 = (n: number) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 
 const STORAGE_KEY = "phantasm-track-state-v1";
 const CINEMATICS_KEY = "phantasm-track-cinematics-v1";
@@ -100,6 +104,7 @@ export function GrimoireLayout() {
   const [sceneStage, setSceneStage] = useState<SceneStage>("welcome");
   // Raven Messenger (suggestions) modal.
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestPrefill, setSuggestPrefill] = useState<SuggestionPrefill | null>(null);
 
   const d = DICTIONARIES[lang];
 
@@ -142,7 +147,17 @@ export function GrimoireLayout() {
                 isFiniteNum(e.total)
               );
             });
-            if (valid.length > 0 || parsed.quests.length === 0) setQuests(valid);
+            if (valid.length > 0 || parsed.quests.length === 0) {
+              // Heal previously stored 16-digit floats.
+              setQuests(
+                valid.map((q) => ({
+                  ...q,
+                  packageWeight: round2(q.packageWeight),
+                  fobValue: round2(q.fobValue),
+                  total: round2(q.total),
+                }))
+              );
+            }
           }
           if (parsed.lang === "es" || parsed.lang === "en") setLang(parsed.lang);
           if (
@@ -223,7 +238,15 @@ export function GrimoireLayout() {
       const id = `ARC-${nextId}`;
       const built = buildQuestEntry({ id, ...args });
       if (!built.ok) return; // calculator already guards, but stay safe
-      setQuests((prev) => [built.value, ...prev]);
+      // Round stored display figures (the domain already computed regime/total).
+      const entry: QuestEntry = {
+        ...built.value,
+        label: built.value.label.slice(0, 60),
+        packageWeight: round2(built.value.packageWeight),
+        fobValue: round2(built.value.fobValue),
+        total: round2(built.value.total),
+      };
+      setQuests((prev) => [entry, ...prev]);
       setNextId((n) => n + 1);
       // A freshly inscribed quest starts at OriginPortal -> packing cinematic.
       if (!cinematicsEnabled) return;
@@ -231,6 +254,35 @@ export function GrimoireLayout() {
       setTriggerKey((k) => k + 1);
     },
     [nextId, cinematicsEnabled]
+  );
+
+  // Oracle -> Guild Log: sensible defaults (1.2 kg / $45 FOB) for a tracked parcel.
+  const handleCreateQuestFromTracking = useCallback(
+    (trackingCode: string, carrierName: string) => {
+      handleInscribe({
+        label: `${carrierName} · ${trackingCode}`,
+        packageWeight: 1.2,
+        fobValue: 45,
+      });
+    },
+    [handleInscribe]
+  );
+
+  // Oracle -> Raven Messenger: open the modal pre-filled for a wrong carrier match.
+  const handleReportTracking = useCallback(
+    (trackingCode: string, detectedNames: string) => {
+      const message = tr(DICTIONARIES[lang].oracleReportTemplate, {
+        code: trackingCode || (lang === "es" ? "[CÓDIGO]" : "[CODE]"),
+        detected: detectedNames,
+      });
+      setSuggestPrefill((prev) => ({
+        seq: (prev?.seq ?? 0) + 1,
+        category: "courier",
+        message,
+      }));
+      setSuggestOpen(true);
+    },
+    [lang]
   );
 
   const handleDelete = useCallback((id: string) => {
@@ -494,13 +546,20 @@ export function GrimoireLayout() {
             onSettingsChange={setSettings}
             onInscribe={handleInscribe}
           />
-          <QuestLog
-            quests={quests}
-            lang={lang}
-            onAdvance={handleAdvance}
-            onDelete={handleDelete}
-            onReset={handleReset}
-          />
+          <div className="flex flex-col gap-6">
+            <TrackingOracle
+              lang={lang}
+              onCreateQuestFromTracking={handleCreateQuestFromTracking}
+              onReportTracking={handleReportTracking}
+            />
+            <QuestLog
+              quests={quests}
+              lang={lang}
+              onAdvance={handleAdvance}
+              onDelete={handleDelete}
+              onReset={handleReset}
+            />
+          </div>
         </div>
 
         <footer className="relative mt-10 text-center text-xs text-foreground/30">
@@ -513,6 +572,7 @@ export function GrimoireLayout() {
       {/* Raven Messenger / Suggestions modal */}
       <SuggestionModal
         open={suggestOpen}
+        prefill={suggestPrefill}
         lang={lang}
         onClose={() => setSuggestOpen(false)}
       />

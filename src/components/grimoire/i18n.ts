@@ -170,6 +170,36 @@ export interface Dictionary {
   // Judge toast
   readonly toastDismiss: string; // aria-label for the ✕ close button
 
+  // Multi-Courier Tracking Oracle
+  readonly oracleTitle: string;
+  readonly oracleSubtitle: string;
+  readonly oracleExpand: string; // aria-label when collapsed
+  readonly oracleCollapse: string; // aria-label when expanded
+  readonly oraclePlaceholder: string;
+  readonly oracleDetect: string;
+  readonly oracleDemo: string;
+  readonly oracleScanning: string;
+  readonly oracleBestMatch: string;
+  readonly oracleNoMatch: string;
+  readonly oracleCopied: string; // inline badge after copy
+  readonly oracleCopiedToast: string; // copy + opening portal
+  readonly oracleInscribe: string;
+  readonly oracleInscribed: string;
+  readonly oraclePickCarrier: string; // hint: pick any carrier
+  readonly oracleOpenPortal: string;
+  readonly oracleEmptyCode: string;
+  readonly oracleDemo1: string;
+  readonly oracleDemo2: string;
+  readonly oracleTmlcDetected: string;
+  readonly oracleStageIntl: string;
+  readonly oracleStageLocal: string;
+  readonly oracleDualHelp: string;
+  readonly oracleCopiedPaste: string;
+  readonly oracleReport: string;
+  readonly oracleReportNone: string; // used in the report template when nothing matched
+  readonly oracleReportTemplate: string; // {code} {detected}
+  readonly suggestCatCourierLabel: string;
+
   // Validation / errors
   readonly errFieldRejected: string; // uses {field}
   readonly errMissing: string; // uses {field}
@@ -345,6 +375,38 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     errNonFinite: "{field} debe ser un número finito",
     errAlreadyFinal: "la misión ya está en la etapa final",
     errOutOfSequence: "solo se permite avanzar a la etapa inmediata siguiente",
+
+    oracleTitle: "🔮 Oráculo Rastreador Multi-Courier (Temu & Ecuador)",
+    oracleSubtitle: "Detecta en qué courier local está tu guía y ábrelo en 1 clic",
+    oracleExpand: "Abrir el Oráculo Rastreador",
+    oracleCollapse: "Cerrar el Oráculo Rastreador",
+    oraclePlaceholder: "Ej. TMU-EC-84920194-UIO",
+    oracleDetect: "🔍 Detectar Courier",
+    oracleDemo: "🧪 Guía Demo Temu",
+    oracleScanning: "El oráculo escanea los 5 couriers...",
+    oracleBestMatch: "Mejor coincidencia",
+    oracleNoMatch: "Sin coincidencia clara: elige tu courier manualmente.",
+    oracleCopied: "📋 Código copiado al portapapeles",
+    oracleCopiedToast: "📋 ¡Guía copiada! Abriendo portal oficial...",
+    oracleInscribe: "➕ Inscribir esta Guía en la Bitácora",
+    oracleInscribed: "✅ Guía inscrita en la Bitácora",
+    oraclePickCarrier: "Toca cualquier courier para copiar la guía y abrir su portal.",
+    oracleOpenPortal: "Abrir portal",
+    oracleEmptyCode: "Escribe un código de rastreo primero.",
+    oracleDemo1: "🧪 Demo 1: TMLC99999999 (Temu → LaarCourier)",
+    oracleDemo2: "🧪 Demo 2: SP1234567890EC (Far Intl → Urbano EC Guía Dual)",
+    oracleTmlcDetected: "🎯 Código oficial Temu-LaarCourier (TMLC) detectado",
+    oracleStageIntl: "✈️ Tránsito Internacional (Far International)",
+    oracleStageLocal:
+      "🚚 Entrega Local Última Milla en Ecuador (Urbano Express — aviso por WhatsApp)",
+    oracleDualHelp:
+      "💡 Este código funciona en Far International para el tránsito internacional y en Urbano Express para la entrega local de última milla en Ecuador. Pega el mismo código en ambos portales.",
+    oracleCopiedPaste: "📋 ¡Código copiado! Abriendo portal oficial...",
+    oracleReport: "⚠️ ¿No coincide con tu courier? Reportar patrón de guía",
+    oracleReportNone: "ninguno",
+    oracleReportTemplate:
+      "Hola, probé la guía {code} en el Oráculo. El sistema detectó {detected}, pero en realidad mi paquete vino por el courier: [ESCRIBE AQUÍ EL COURIER REAL].",
+    suggestCatCourierLabel: "🚚 Añadir/Ajustar Courier",
   },
 
   en: {
@@ -512,6 +574,38 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     errNonFinite: "{field} must be a finite number",
     errAlreadyFinal: "quest is already at the final stage",
     errOutOfSequence: "only the immediate successor is allowed",
+
+    oracleTitle: "🔮 Multi-Courier Tracking Oracle (Temu & Ecuador)",
+    oracleSubtitle: "Detect which local carrier holds your tracking code & open in 1 click",
+    oracleExpand: "Open the Tracking Oracle",
+    oracleCollapse: "Close the Tracking Oracle",
+    oraclePlaceholder: "e.g. TMU-EC-84920194-UIO",
+    oracleDetect: "🔍 Detect Courier",
+    oracleDemo: "🧪 Temu Demo Code",
+    oracleScanning: "The oracle is scanning all 5 carriers...",
+    oracleBestMatch: "Best match",
+    oracleNoMatch: "No clear match: pick your carrier manually.",
+    oracleCopied: "📋 Code copied to clipboard",
+    oracleCopiedToast: "📋 Code copied! Opening official portal...",
+    oracleInscribe: "➕ Inscribe this Code in the Log",
+    oracleInscribed: "✅ Code inscribed in the Log",
+    oraclePickCarrier: "Tap any carrier to copy the code and open its portal.",
+    oracleOpenPortal: "Open portal",
+    oracleEmptyCode: "Enter a tracking code first.",
+    oracleDemo1: "🧪 Demo 1: TMLC99999999 (Temu → LaarCourier)",
+    oracleDemo2: "🧪 Demo 2: SP1234567890EC (Far Intl → Urbano EC Dual Guide)",
+    oracleTmlcDetected: "🎯 Official Temu-LaarCourier (TMLC) code detected",
+    oracleStageIntl: "✈️ International Transit (Far International)",
+    oracleStageLocal:
+      "🚚 Local Last-Mile Delivery in Ecuador (Urbano Express — WhatsApp notice)",
+    oracleDualHelp:
+      "💡 This code works on Far International for international transit and on Urbano Express for local last-mile delivery in Ecuador. Paste the same code on both portals.",
+    oracleCopiedPaste: "📋 Code copied! Opening official portal...",
+    oracleReport: "⚠️ Wrong carrier match? Report tracking pattern",
+    oracleReportNone: "none",
+    oracleReportTemplate:
+      "Hi, I tested tracking code {code} in the Oracle. The system detected {detected}, but my package actually came through this carrier: [WRITE THE REAL CARRIER HERE].",
+    suggestCatCourierLabel: "🚚 Add/Adjust Courier",
   },
 };
 

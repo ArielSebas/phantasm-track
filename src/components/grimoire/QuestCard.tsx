@@ -27,6 +27,9 @@ export interface QuestCardProps {
   readonly onDelete: (id: string) => void;
 }
 
+// Weight shown with at most 2 decimals (2.4992939586986123 -> "2.5 kg").
+const KG = (n: number) => `${Number(Number(n).toFixed(2))} kg`;
+
 const USD = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -131,10 +134,15 @@ export function QuestCard({ quest, lang, onAdvance, onDelete }: QuestCardProps) 
       {/* Compact one-line summary shown when collapsed */}
       {!expanded ? (
         <div className="mb-4 flex items-center justify-between gap-2 rounded-lg border border-border-arcane/40 bg-black/20 px-3 py-2 text-xs">
-          <span className="font-mono text-sky-200">{quest.packageWeight} kg</span>
-          <span className="font-mono text-amber-200">{USD(quest.fobValue)}</span>
-          <span className="flex items-center gap-1 font-mono font-bold text-rose-200">
-            <Flame className="h-3 w-3" aria-hidden /> {USD(quest.total)}
+          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-mono tabular-nums text-sky-200">
+            {KG(quest.packageWeight)}
+          </span>
+          <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-mono tabular-nums text-amber-200">
+            {USD(quest.fobValue)}
+          </span>
+          <span className="flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap font-mono font-bold tabular-nums text-rose-200">
+            <Flame className="h-3 w-3 shrink-0" aria-hidden />
+            <span className="min-w-0 overflow-hidden text-ellipsis">{USD(quest.total)}</span>
           </span>
         </div>
       ) : null}
@@ -148,27 +156,27 @@ export function QuestCard({ quest, lang, onAdvance, onDelete }: QuestCardProps) 
       >
         <div className="overflow-hidden">
           <dl className="mb-4 grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-lg border border-border-arcane/50 bg-black/30 px-2 py-2">
+            <div className="min-w-0 rounded-lg border border-border-arcane/50 bg-black/30 px-2 py-2">
               <dt className="flex items-center justify-center gap-1 text-[0.6rem] uppercase tracking-wider text-foreground/40">
                 <Scale className="h-3 w-3" aria-hidden /> {d.cardWeight}
               </dt>
-              <dd className="mt-1 font-mono text-sm text-sky-200">
-                {quest.packageWeight} kg
+              <dd className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm tabular-nums text-sky-200">
+                {KG(quest.packageWeight)}
               </dd>
             </div>
-            <div className="rounded-lg border border-border-arcane/50 bg-black/30 px-2 py-2">
+            <div className="min-w-0 rounded-lg border border-border-arcane/50 bg-black/30 px-2 py-2">
               <dt className="flex items-center justify-center gap-1 text-[0.6rem] uppercase tracking-wider text-foreground/40">
                 <Coins className="h-3 w-3" aria-hidden /> {d.cardFob}
               </dt>
-              <dd className="mt-1 font-mono text-sm text-amber-200">
+              <dd className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm tabular-nums text-amber-200">
                 {USD(quest.fobValue)}
               </dd>
             </div>
-            <div className="rounded-lg border border-border-arcane/50 bg-black/30 px-2 py-2">
+            <div className="min-w-0 rounded-lg border border-border-arcane/50 bg-black/30 px-2 py-2">
               <dt className="flex items-center justify-center gap-1 text-[0.6rem] uppercase tracking-wider text-foreground/40">
                 <Flame className="h-3 w-3" aria-hidden /> {d.cardTribute}
               </dt>
-              <dd className="mt-1 font-mono text-sm font-bold text-rose-200">
+              <dd className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm font-bold tabular-nums text-rose-200">
                 {USD(quest.total)}
               </dd>
             </div>

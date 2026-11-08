@@ -4,17 +4,25 @@ import React, { useRef, useState } from "react";
 import { Feather, Send, Sparkles, X, CheckCircle2, AlertTriangle } from "lucide-react";
 import type { Lang } from "./i18n";
 
+export interface SuggestionPrefill {
+  /** Bump `seq` on every request so the same prefill can be re-applied. */
+  seq: number;
+  category: "idea" | "bug" | "courier" | "design";
+  message: string;
+}
+
 export interface SuggestionModalProps {
   open: boolean;
   onClose: () => void;
   lang?: Lang;
+  prefill?: SuggestionPrefill | null;
 }
 
 type CategoryKey = "idea" | "bug" | "courier" | "design";
 
 const SUBMIT_COOLDOWN_MS = 30_000;
 
-export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalProps) {
+export function SuggestionModal({ open, onClose, lang = "es", prefill = null }: SuggestionModalProps) {
   const [alias, setAlias] = useState("");
   const [category, setCategory] = useState<CategoryKey>("idea");
   const [message, setMessage] = useState("");
@@ -23,6 +31,15 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
   const [website, setWebsite] = useState("");
   const lastSubmitRef = useRef(0);
   const [cooldownMsg, setCooldownMsg] = useState(false);
+  // Apply an external prefill (e.g. from the Tracking Oracle) once per request.
+  const [appliedSeq, setAppliedSeq] = useState(0);
+  if (prefill && prefill.seq !== appliedSeq) {
+    setAppliedSeq(prefill.seq);
+    setCategory(prefill.category);
+    setMessage(prefill.message.slice(0, 800));
+    setStatus("idle");
+    setCooldownMsg(false);
+  }
 
   if (!open) return null;
 
@@ -31,7 +48,7 @@ export function SuggestionModal({ open, onClose, lang = "es" }: SuggestionModalP
   const categories: { key: CategoryKey; label: string }[] = [
     { key: "idea", label: isEs ? "💡 Idea" : "💡 Idea" },
     { key: "bug", label: isEs ? "🐛 Bug" : "🐛 Bug" },
-    { key: "courier", label: isEs ? "📦 Courier de Ecuador" : "📦 Ecuador Courier" },
+    { key: "courier", label: isEs ? "🚚 Añadir/Ajustar Courier" : "🚚 Add/Adjust Courier" },
     { key: "design", label: isEs ? "🎃 Diseño" : "🎃 Design" },
   ];
 

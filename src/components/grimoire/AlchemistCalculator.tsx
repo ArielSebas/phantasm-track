@@ -330,7 +330,8 @@ export function AlchemistCalculator({
 
   function handleInscribe() {
     if (!result.ok || weightKg === undefined || fobNum === undefined) return;
-    const name = label.trim() || d.unnamedParcel;
+    // Collapse repeated whitespace, trim, and cap at 60 chars.
+    const name = label.replace(/\s+/g, " ").trim().slice(0, 60) || d.unnamedParcel;
     onInscribe({ label: name, packageWeight: weightKg, fobValue: fobNum });
     setLabel("");
   }
@@ -612,6 +613,7 @@ export function AlchemistCalculator({
           <input
             type="text"
             value={label}
+            maxLength={60}
             placeholder={d.questNamePlaceholder}
             onChange={(e) => setLabel(e.target.value)}
             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground/30"
