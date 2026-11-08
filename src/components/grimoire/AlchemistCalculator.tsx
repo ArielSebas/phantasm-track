@@ -112,21 +112,71 @@ const COURIERS: readonly {
 const USD = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-/** Parse a form field into a number | undefined (empty -> undefined = "missing"). */
+/** Accepts digits with an optional single "." or "," separator (mid-typing safe). */
+const DECIMAL_PATTERN = /^\d*([.,]\d*)?$/;
+
+/**
+ * Parse a form field into a number | undefined. Empty or a bare separator
+ * ("." / ",") -> undefined = "missing". Commas are normalized to dots so
+ * Spanish-locale input like "2,5" parses the same as "2.5".
+ */
 function parseField(raw: string): number | undefined {
-  const trimmed = raw.trim();
-  if (trimmed === "") return undefined;
-  return Number(trimmed);
+  const trimmed = raw.trim().replace(/,/g, ".");
+  if (trimmed === "" || trimmed === ".") return undefined;
+  const num = parseFloat(trimmed);
+  return Number.isNaN(num) ? undefined : num;
 }
+
+/**
+ * Text input that accepts "." or "," decimals. It keeps the raw string so a
+ * trailing separator ("2." / "2,") survives while typing, and ignores
+ * keystrokes that would not form a valid decimal.
+ */
+function DecimalInput({
+  value,
+  onValueChange,
+  className,
+  ariaLabel,
+}: {
+  value: string;
+  onValueChange: (raw: string) => void;
+  className?: string;
+  ariaLabel?: string;
+}) {
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      autoComplete="off"
+      aria-label={ariaLabel}
+      value={value}
+      onChange={(e) => {
+        const raw = e.target.value;
+        if (DECIMAL_PATTERN.test(raw)) onValueChange(raw);
+      }}
+      className={className}
+    />
+  );
+}
+
+/** Exact pounds-per-kilogram used for all weight/rate conversions. */
+const LBS_PER_KG = 2.20462262185;
 
 /** Convert an entered weight (in the active unit) into kilograms. */
 function toKg(value: number, unit: WeightUnit): number {
-  return unit === "kg" ? value : value / LB_PER_KG;
+  return unit === "kg" ? value : value / LBS_PER_KG;
 }
 
 /** Convert kilograms into pounds. */
 function toLb(kg: number): number {
-  return kg * LB_PER_KG;
+  return kg * LBS_PER_KG;
+}
+
+export type RateUnit = "lb" | "kg";
+
+/** Convert a rate typed in `unit` ($/lb or $/kg) into $/lb. */
+function rateToPerLb(rate: number, unit: RateUnit): number {
+  return unit === "kg" ? rate / LBS_PER_KG : rate;
 }
 
 export function AlchemistCalculator({
@@ -144,6 +194,23 @@ export function AlchemistCalculator({
     unit === "kg" ? "2.5" : (2.5 * LB_PER_KG).toFixed(2)
   );
   const [fob, setFob] = useState("180");
+  // Raw draft for the manual $/lb rate, kept in sync with the persisted prop so
+  // typing "4." or "4,5" is never rewritten mid-keystroke.
+  const [rateUnit, setRateUnit] = useState<RateUnit>("lb");
+  const [rateDraft, setRateDraft] = useState(() => String(ratePerLb));
+  const [lastRate, setLastRate] = useState(ratePerLb);
+  if (ratePerLb !== lastRate) {
+    setLastRate(ratePerLb);
+    // External change (e.g. rehydrated settings): resync unless it already matches.
+    const draftPerLb = rateToPerLb(parseField(rateDraft) ?? 0, rateUnit);
+    if (Math.abs(draftPerLb - ratePerLb) > 1e-9) {
+      setRateDraft(
+        rateUnit === "kg"
+          ? String(Number((ratePerLb * LBS_PER_KG).toFixed(2)))
+          : String(ratePerLb)
+      );
+    }
+  }
   const [label, setLabel] = useState("");
   // De-clutter: collapsible sections, both closed by default.
   const [potionsOpen, setPotionsOpen] = useState(false);
@@ -240,7 +307,22 @@ export function AlchemistCalculator({
   }
 
   function setRate(raw: string) {
-    const n = Number(raw);
+    setRateDraft(raw);
+    const n = rateToPerLb(parseField(raw) ?? 0, rateUnit);
+    onSettingsChange({
+      ...settings,
+      ratePerLb: Number.isFinite(n) && n >= 0 ? n : 0,
+    });
+  }
+
+  /**
+   * Switch the rate unit while KEEPING the typed number: "5" stays "5" and is
+   * reinterpreted as $5/kg or $5/lb. The stored $/lb rate is recomputed.
+   */
+  function switchRateUnit(next: RateUnit) {
+    if (next === rateUnit) return;
+    setRateUnit(next);
+    const n = rateToPerLb(parseField(rateDraft) ?? 0, next);
     onSettingsChange({
       ...settings,
       ratePerLb: Number.isFinite(n) && n >= 0 ? n : 0,
@@ -382,27 +464,54 @@ export function AlchemistCalculator({
 
           {/* Single compact 1-line formula badge for the selected courier */}
           <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-black/30 px-2 py-0.5 font-mono text-[0.65rem] text-emerald-200/80">
-            ƒ ·{" "}
-            {d[COURIERS.find((c) => c.id === courier)?.formulaKey ?? "courierFormulaCustom"]}
+            {courier === "custom" && rateUnit === "kg" ? (
+              d.manualRateFormulaKg
+            ) : (
+              <>
+                ƒ ·{" "}
+                {d[COURIERS.find((c) => c.id === courier)?.formulaKey ?? "courierFormulaCustom"]}
+              </>
+            )}
           </span>
 
           {/* Manual $/lb rate (custom model only) */}
           {courier === "custom" ? (
             <label className="mt-1 flex flex-col gap-1">
-              <span className="text-xs font-medium text-foreground/60">
-                {d.ratePerLb}
+              <span className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-foreground/60">
+                  {rateUnit === "kg" ? d.manualRateLabelKg : d.ratePerLb}
+                </span>
+                <span className="inline-flex shrink-0 overflow-hidden rounded-lg border border-border-arcane/60">
+                  {(["lb", "kg"] as const).map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => switchRateUnit(u)}
+                      aria-pressed={rateUnit === u}
+                      className={[
+                        "px-2.5 py-0.5 text-[0.65rem] font-bold uppercase transition-colors",
+                        rateUnit === u
+                          ? "bg-arcane-blue/25 text-sky-100"
+                          : "bg-black/30 text-foreground/40 hover:text-foreground/70",
+                      ].join(" ")}
+                    >
+                      $/{u}
+                    </button>
+                  ))}
+                </span>
               </span>
-              <input
-                type="number"
-                min="0"
-                step="0.1"
-                inputMode="decimal"
-                value={String(ratePerLb)}
-                onChange={(e) => setRate(e.target.value)}
+              <DecimalInput
+                value={rateDraft}
+                onValueChange={setRate}
                 className="rounded-lg border border-border-arcane/60 bg-black/40 px-3 py-2 font-mono text-sm text-emerald-100 outline-none transition-colors focus:border-emerald-400/70 focus:shadow-[0_0_16px_-4px_rgba(52,211,153,0.7)]"
               />
               <span className="text-[0.65rem] text-foreground/40">
                 {d.ratePerLbHint}
+              </span>
+              <span className="font-mono text-[0.65rem] text-emerald-200/60">
+                {rateUnit === "kg"
+                  ? `1 kg = ${LB_PER_KG} lb · $${(ratePerLb * LBS_PER_KG).toFixed(2)}/kg ≈ $${ratePerLb.toFixed(2)}/lb`
+                  : `1 kg = ${LB_PER_KG} lb · $${ratePerLb.toFixed(2)}/lb ≈ $${(ratePerLb * LBS_PER_KG).toFixed(2)}/kg`}
               </span>
             </label>
           ) : null}
@@ -440,13 +549,9 @@ export function AlchemistCalculator({
             <Scale className="h-3.5 w-3.5" aria-hidden />{" "}
             {tr(d.packageWeight, { unit })}
           </span>
-          <input
-            type="number"
-            min="0"
-            step="0.1"
-            inputMode="decimal"
+          <DecimalInput
             value={weight}
-            onChange={(e) => setWeight(e.target.value)}
+            onValueChange={setWeight}
             className="rounded-lg border border-border-arcane/60 bg-black/40 px-3 py-2 font-mono text-sm text-sky-100 outline-none transition-colors focus:border-arcane-blue/70 focus:shadow-[0_0_16px_-4px_rgba(110,168,254,0.7)]"
           />
         </label>
@@ -454,13 +559,9 @@ export function AlchemistCalculator({
           <span className="flex items-center gap-1 text-xs font-medium text-foreground/60">
             <Coins className="h-3.5 w-3.5" aria-hidden /> {d.fobValue}
           </span>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            inputMode="decimal"
+          <DecimalInput
             value={fob}
-            onChange={(e) => setFob(e.target.value)}
+            onValueChange={setFob}
             className="rounded-lg border border-border-arcane/60 bg-black/40 px-3 py-2 font-mono text-sm text-amber-100 outline-none transition-colors focus:border-amber-400/70 focus:shadow-[0_0_16px_-4px_rgba(245,158,11,0.7)]"
           />
         </label>
@@ -494,6 +595,8 @@ export function AlchemistCalculator({
           freight={quote.freight}
           surcharge={quote.surcharge}
           weightLb={weightLb}
+          weightKg={weightKg}
+          freightInKg={courier === "custom" && rateUnit === "kg"}
           ratePerLb={ratePerLb}
           fobValue={fobNum}
           breakdownOpen={breakdownOpen}
@@ -571,6 +674,8 @@ function Verdict({
   freight,
   surcharge,
   weightLb,
+  weightKg,
+  freightInKg,
   ratePerLb,
   fobValue,
   breakdownOpen,
@@ -584,6 +689,9 @@ function Verdict({
   freight: number;
   surcharge: number;
   weightLb?: number;
+  weightKg?: number;
+  /** Manual courier priced in $/kg: show the freight row in kg. */
+  freightInKg: boolean;
   ratePerLb: number;
   fobValue?: number;
   breakdownOpen: boolean;
@@ -692,13 +800,23 @@ function Verdict({
             {mode === "courier" ? (
               <>
                 <Row
-                  label={tr(d.rowFreight, {
-                    lb: (weightLb ?? 0).toFixed(2),
-                    rate:
-                      weightLb && weightLb > 0
-                        ? (freight / weightLb).toFixed(3)
-                        : ratePerLb.toFixed(2),
-                  })}
+                  label={
+                    freightInKg
+                      ? tr(d.rowFreightKg, {
+                          kg: (weightKg ?? 0).toFixed(2),
+                          rate:
+                            weightKg && weightKg > 0
+                              ? (freight / weightKg).toFixed(2)
+                              : (ratePerLb * LBS_PER_KG).toFixed(2),
+                        })
+                      : tr(d.rowFreight, {
+                          lb: (weightLb ?? 0).toFixed(2),
+                          rate:
+                            weightLb && weightLb > 0
+                              ? (freight / weightLb).toFixed(3)
+                              : ratePerLb.toFixed(2),
+                        })
+                  }
                   value={USD(freight)}
                 />
                 {surcharge > 0 ? (

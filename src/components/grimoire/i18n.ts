@@ -85,6 +85,8 @@ export interface Dictionary {
   readonly weightUnit: string;
   readonly ratePerLb: string;
   readonly ratePerLbHint: string;
+  readonly manualRateLabelKg: string; // manual rate label when entering $/kg
+  readonly manualRateFormulaKg: string; // full formula badge text for $/kg
 
   // Courier quoter (picker of real Ecuador courier tariffs)
   readonly courierPickerLabel: string; // "Selecciona tu Courier / Tarifario"
@@ -117,6 +119,7 @@ export interface Dictionary {
   readonly grandImportTotal: string; // Total a Pagar (Solo Importación)
   readonly grandFinalTotal: string; // Costo Final Total (Producto + Importación)
   readonly rowFreight: string; // freight line label, uses {lb} {rate}
+  readonly rowFreightKg: string; // manual $/kg freight line, uses {kg} {rate}
   readonly rowSurcharge: string; // courier surcharge/recargos line
 
   readonly conversionHint: string; // uses {kg} {lb}
@@ -255,6 +258,8 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     weightUnit: "Unidad de peso",
     ratePerLb: "Tarifa Manual del Courier por Libra ($/lb)",
     ratePerLbHint: "Editable — varía según el courier.",
+    manualRateLabelKg: "Tarifa Manual del Courier por Kilo ($/kg)",
+    manualRateFormulaKg: "f · kg × tu tarifa manual $/kg",
 
     courierPickerLabel: "Selecciona tu Courier / Tarifario",
     courierPickerHelp:
@@ -287,6 +292,7 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     grandImportTotal: "Total a Pagar (Solo Importación)",
     grandFinalTotal: "Costo Final Total (Producto + Importación)",
     rowFreight: "Flete Internacional ({lb} lb × ${rate}/lb)",
+    rowFreightKg: "Flete Internacional ({kg} kg × ${rate}/kg)",
     rowSurcharge: "Recargos del Courier (manejo/seguro)",
 
     conversionHint: "1 kg = 2.20462 lb · {kg} kg = {lb} lb",
@@ -419,6 +425,8 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     weightUnit: "Weight unit",
     ratePerLb: "Manual Courier Rate per Pound ($/lb)",
     ratePerLbHint: "Editable — varies by courier.",
+    manualRateLabelKg: "Manual Courier Rate per Kilogram ($/kg)",
+    manualRateFormulaKg: "f · kg × your manual $/kg rate",
 
     courierPickerLabel: "Select your Courier / Tariff",
     courierPickerHelp:
@@ -451,6 +459,7 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     grandImportTotal: "Total to Pay (Import Only)",
     grandFinalTotal: "Final Total Cost (Product + Import)",
     rowFreight: "International Freight ({lb} lb × ${rate}/lb)",
+    rowFreightKg: "International Freight ({kg} kg × ${rate}/kg)",
     rowSurcharge: "Courier Surcharge (handling/insurance)",
 
     conversionHint: "1 kg = 2.20462 lb · {kg} kg = {lb} lb",
