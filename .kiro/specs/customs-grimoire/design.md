@@ -468,3 +468,24 @@ Testing follows `.kiro/steering/tech.md`: **Vitest** with **fast-check** for Pro
 ### Isolation
 
 Because `src/domain/customs/*` imports no React/Next/UI modules, the property suites run with no DOM environment and no component mounting. UI components are covered separately (outside this PBT scope) with lightweight example/snapshot tests if desired; they are not the target of property tests, consistent with the steering guidance that PBT focuses on the `domain/customs` functions.
+
+## Extension Design (UI and API layers)
+
+These additions sit entirely above the pure domain layer. `src/domain/customs/` is unchanged and remains the single source of truth for regime, tax and mana-bar math.
+
+### Localization and courier modes
+- `i18n.ts` holds a typed `Dictionary` with `es` and `en` tables; the compiler enforces that both languages stay in sync.
+- `AlchemistCalculator.tsx` derives courier freight and surcharge from the selected model (LaarBox, Upper, Tiered Table, Manual `$/LB` | `$/KG`) and folds them into `CustomsConfig.flatFee` before calling `calculateCustoms`. The UI never recomputes the regime or taxes.
+
+### Tracking Oracle
+- `carriers.ts` is a pure helper module (no React): a carrier catalogue, `sanitizeTrackingCode`, `detectCarriers` and `carrierUrl`. Exact patterns (`TMLC...`, `SP...EC`) are evaluated first, then generic prefix/length rules, returning one or more `CarrierMatch` entries with a role (`exact`, `intl`, `local`, `match`).
+- `TrackingOracle.tsx` renders the collapsible card and exposes two callbacks to `GrimoireLayout.tsx`: inscribe a quest and report a mismatch (which opens `SuggestionModal` with a prefill).
+
+### Feedback API and hardening
+- `POST /api/suggestions` pipeline: origin check, per-IP rate limit, size cap, JSON parse, type validation, honeypot, sanitization, Discord webhook with `allowed_mentions` disabled, generic responses.
+- The in-memory limiter is per serverless instance; a shared store (for example Upstash) or the platform WAF is the path to a global limit.
+- `next.config.ts` adds the security headers for all routes.
+
+### Cinematic staging
+- `BackgroundScene.tsx` draws both guardians as full-height SVGs. Props are positioned from a shared scale (`--gs` for the guardians, `--ps` for the props) so the hand line is consistent across breakpoints; each stage declares which point of its prop sits on that line. The text banner is pinned to the bottom of the viewport.
+- `AmbientScenery.tsx` is an independent non-interactive `z-0` layer; `icon.svg` provides the favicon via `metadata.icons`.

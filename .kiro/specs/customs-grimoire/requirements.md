@@ -131,3 +131,52 @@ The pure business logic for tax calculation, weight validation, and mana bar per
 4. IF a Quest at the Guild_Delivery stage is advanced, THEN THE Quest_Tracker SHALL reject the advance, retain the Guild_Delivery stage, and return a validation error indicating that the Quest is already at the final stage.
 5. IF a stage change is requested that targets a Quest_Stage other than the immediately following Quest_Stage in the sequence Origin_Portal, Customs_Abyss, Guild_Delivery, THEN THE Quest_Tracker SHALL reject the stage change, retain the current Quest_Stage, and return a validation error identifying the rejected target Quest_Stage.
 6. IF a stage change is requested that targets a value that is not one of Origin_Portal, Customs_Abyss, or Guild_Delivery, THEN THE Quest_Tracker SHALL reject the stage change, retain the current Quest_Stage, and return a validation error identifying the invalid target Quest_Stage.
+
+## Extension Requirements (UI and edge capabilities)
+
+The following capabilities were added after the core domain requirements above. They live entirely in the UI and API layers and do not change Requirements 1-8.
+
+### Requirement 9: Bilingual interface and Ecuadorian courier modes
+
+**User Story:** As an Ecuadorian shopper, I want the grimoire in Spanish or English and the real courier cost models, so that the estimate matches what I will actually pay.
+
+#### Acceptance Criteria
+
+1. WHEN the grimoire loads, THE UI SHALL display Spanish by default and SHALL provide an ES | EN language switch with every user-facing string present in both languages.
+2. WHEN the user selects a shipping mode, THE Alchemist_Calculator SHALL support Temu Direct and Locker/Courier modes, with the LaarBox, Upper, Tiered Table and Manual rate (`$/LB` or `$/KG`) tariff models.
+3. WHEN the user enters a decimal number using either a dot or a comma, THE UI SHALL accept the value and SHALL display derived rates and weights with at most 2 decimals.
+4. WHEN a courier freight or surcharge applies, THE UI SHALL pass it to the Customs_Calculator through the configured Flat_Fee and SHALL NOT reimplement regime or tax math.
+
+### Requirement 10: Multi-courier tracking oracle
+
+**User Story:** As a Temu shopper in Ecuador, I want to paste a tracking code and learn which local carrier handles it, so that I can track my parcel in one click.
+
+#### Acceptance Criteria
+
+1. WHEN a tracking code matches `^TMLC\d{6,12}$`, THE Tracking_Oracle SHALL identify LaarCourier.
+2. WHEN a tracking code matches `^SP\d{10,14}EC$`, THE Tracking_Oracle SHALL identify a dual-stage guide: Far International for international transit and Urbano Express for local last-mile delivery.
+3. WHEN a tracking code does not match an exact pattern, THE Tracking_Oracle SHALL apply prefix and length rules for Urbano Express, Servientrega, Tramaco and Gintracom/Correos, and SHALL allow the user to choose any carrier.
+4. WHEN the user selects a carrier, THE Tracking_Oracle SHALL copy the sanitized code to the clipboard and open the official portal in a new tab with `noopener,noreferrer`.
+5. WHEN the user reports a mismatched carrier, THE Tracking_Oracle SHALL open the suggestion modal with the category `courier` pre-selected and a message containing the entered code.
+
+### Requirement 11: Abuse-resistant feedback channel
+
+**User Story:** As the maintainer, I want the public feedback endpoint to resist spam and leakage, so that the deployed app cannot be abused.
+
+#### Acceptance Criteria
+
+1. IF an IP address sends more than 3 requests to the suggestions endpoint within 10 minutes, THEN THE Suggestions_Endpoint SHALL reject the request with HTTP 429.
+2. IF a submission fills the honeypot field, THEN THE Suggestions_Endpoint SHALL return success without notifying Discord.
+3. IF a request payload exceeds 4 KB or contains values of the wrong type or length, THEN THE Suggestions_Endpoint SHALL reject the request with a generic error.
+4. WHEN a valid submission is received, THE Suggestions_Endpoint SHALL strip control characters and Discord mass mentions, SHALL verify the request origin in production, and SHALL NOT return stack traces or webhook URLs.
+5. WHEN any page is served, THE App SHALL send the security headers `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`.
+
+### Requirement 12: Atmospheric presentation
+
+**User Story:** As a judge or visitor, I want an immersive Halloween atmosphere that never gets in the way of the tool.
+
+#### Acceptance Criteria
+
+1. WHEN a quest is inscribed, advanced, delivered or banished, or the grimoire loads, THE UI SHALL play the matching cinematic (inscribe, advance, deliver, banish or welcome) while the animation toggle is ON, and SHALL persist the toggle locally.
+2. WHILE animations are OFF, THE UI SHALL NOT dim the screen or delay the language notice.
+3. WHILE the grimoire is displayed, THE Decorative_Background SHALL be non-interactive and low-opacity, and SHALL keep all text and inputs legible on mobile and desktop.

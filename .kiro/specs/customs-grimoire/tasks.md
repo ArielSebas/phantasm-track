@@ -152,7 +152,7 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     - Render the collection of `QuestCard`s as adventurer's-log entries; pass through advance handlers
     - _Requirements: 8.1, 8.2, 8.3, 8.4; Design: QuestLog_
 
-  - [x] 8.5 Implement `AlchemistCalculator.tsx`
+  - [x] 8.5 Implement `AlchemistCa-++++++++++++++++++++++++++++lculator.tsx`
     - Form for `Package_Weight` and `FOB_Value`; on change call `calculateCustoms(input, config)`; on `Ok` render regime badge (4x4 vs General) and tariff/VAT/flat-fee/total breakdown; on `Err` show field-specific message
     - Embed two `ManaBar`s (annual weight, annual budget) fed by cumulative totals
     - _Requirements: 1.1, 1.2, 1.3, 2.4, 3.4, 4.2, 4.4, 4.5; Design: AlchemistCalculator_
@@ -169,6 +169,59 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
 
 - [x] 10. Final checkpoint — full build and test pass
   - Ensure all tests pass and the project builds, ask the user if questions arise.
+
+## Extension Tasks (built on top of the initial spec)
+
+These tasks were added after the core domain/UI plan (tasks 1-10) was complete. They are UI/edge concerns only: `src/domain/customs/` and `src/__tests__/` were left untouched.
+
+- [x] 11. Interactive full-viewport SVG guardians and gothic scenery
+  - [x] 11.1 Choreographed guardians in `BackgroundScene.tsx`
+    - Skeleton Courier (left) and Pumpkin Lord (right) full-height SVG characters with five cinematics: `welcome`, `packing` (inscribe), `customs` (advance), `delivered` (deliver), `banished` (banish)
+    - Props (packing table, SENAE scanner belt, handed-off parcel, banished box) anchored to the characters' hand/ground line with a unified scale (`--gs`, `--ps`); banner pinned near the bottom of the viewport
+    - Guardians hidden below `xl` while idle, shown on every screen size during active cinematics
+  - [x] 11.2 Animations ON/OFF toggle in `GrimoireLayout.tsx`
+    - Preference persisted in `localStorage`; the language toast skips the welcome wait and the dark backdrop when animations are off
+  - [x] 11.3 Gothic scenery and branding
+    - `AmbientScenery.tsx`: low-opacity graveyard (tombstones, zombie hand, small pumpkins), drifting bats and cobwebs on a non-interactive `z-0` layer, with reduced-motion support
+    - `src/app/icon.svg` custom Jack-o'-lantern/grimoire favicon wired through `metadata.icons`
+    - Responsive header toolbar that flows above the title on mobile
+
+- [x] 12. Bilingual localization (ES | EN) and Ecuadorian courier modes
+  - [x] 12.1 Bilingual dictionary in `i18n.ts`
+    - `es` and `en` tables kept in structural sync via the `Dictionary` interface; `tr()` interpolation helper; Spanish is the default
+    - Language switch (`ES | EN`) with the language toast
+  - [x] 12.2 Courier modes in `AlchemistCalculator.tsx`
+    - Shipping modes: Temu Direct and Locker/Courier
+    - Courier tariff models: LaarBox, Upper, Tiered Table, and Manual rate with a `$/LB` | `$/KG` switcher
+    - Dot or comma decimal input, live lb to kg conversion, rate shown with at most 2 decimals
+    - Freight and surcharge are folded into `flatFee` and passed to `calculateCustoms`, so the domain stays authoritative for regime and totals
+  - [x] 12.3 Display and persistence polish
+    - Quest card weight/FOB/tribute rounded to 2 decimals and truncated inside their boxes
+    - `localStorage` state validated and rounded on load; quest label capped at 60 characters
+
+- [x] 13. Messenger Raven dual-notification pipeline and API security hardening
+  - [x] 13.1 Suggestion modal (`SuggestionModal.tsx`)
+    - Categories, honeypot field `website`, 30-second client cooldown, optional prefill from the Tracking Oracle
+    - Dual delivery: server route (Discord) and Web3Forms (email)
+  - [x] 13.2 Hardened route `src/app/api/suggestions/route.ts`
+    - Per-IP in-memory rate limit (3 requests / 10 minutes, HTTP 429), honeypot silent success, 4 KB payload cap, strict type/length validation
+    - Sanitization of control characters and Discord mass mentions (`allowed_mentions` disabled), production same-origin check, generic errors (no secret leakage)
+  - [x] 13.3 Security headers in `next.config.ts`
+    - `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`; `poweredByHeader` disabled
+  - [x] 13.4 Secret hygiene
+    - `.env*` ignored in `.gitignore` and `.kiroignore`; webhook URL never exposed to the client
+
+- [x] 14. Multi-Courier Tracking Oracle for Temu and Ecuador
+  - [x] 14.1 Carrier catalogue and detection in `carriers.ts`
+    - `^TMLC\d{6,12}$` routes to LaarCourier; `^SP\d{10,14}EC$` is a dual-stage guide (Far International for international transit + Urbano Express for local last mile)
+    - Generic rules for Urbano, Servientrega, Tramaco and Gintracom/Correos; input sanitized to letters, digits and hyphens (max 40)
+    - LaarCourier deep link uses `encodeURIComponent` on the code; safe fake demo codes `TMLC99999999` and `SP1234567890EC`
+  - [x] 14.2 UI in `TrackingOracle.tsx`
+    - Collapsible card, two demo presets, 1-second scan animation, multi-match highlighting
+    - One click copies the code (`navigator.clipboard.writeText`) and opens the official portal with `noopener,noreferrer`
+    - "Inscribe in the Log" action wired to `GrimoireLayout.tsx`
+  - [x] 14.3 Mismatch reporting
+    - "Wrong carrier match? Report tracking pattern" opens `SuggestionModal` with category `courier` and a message template containing the code
 
 ## Notes
 
@@ -190,7 +243,10 @@ This plan builds PhantasmTrack (GrimCourier) bottom-up: project scaffolding firs
     { "id": 5, "tasks": ["3.5", "3.6", "3.7", "8.1", "8.2"] },
     { "id": 6, "tasks": ["8.3", "8.5"] },
     { "id": 7, "tasks": ["8.4", "8.6"] },
-    { "id": 8, "tasks": ["9.1"] }
+    { "id": 8, "tasks": ["9.1"] },
+    { "id": 9, "tasks": ["11.1", "12.1", "13.1", "14.1"] },
+    { "id": 10, "tasks": ["11.2", "11.3", "12.2", "13.2", "13.3", "13.4", "14.2"] },
+    { "id": 11, "tasks": ["12.3", "14.3"] }
   ]
 }
 ```
