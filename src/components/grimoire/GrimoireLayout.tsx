@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Scroll, Coins, Sparkles, Moon, X } from "lucide-react";
 import {
   ANNUAL_BUDGET_LIMIT,
@@ -106,6 +106,20 @@ export function GrimoireLayout() {
   // Raven Messenger (suggestions) modal.
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestPrefill, setSuggestPrefill] = useState<SuggestionPrefill | null>(null);
+  // Box received from GrimCourier Crew via URL params (?weightKg=&fobUsd=...).
+  const [crewBox, setCrewBox] = useState<{
+    weightKg: number;
+    fobUsd: number;
+    label: string;
+    boxIndex?: number;
+    showBanner: boolean;
+  } | null>(null);
+  const [calcIncoming, setCalcIncoming] = useState<{
+    seq: number;
+    weightKg: number;
+    fobUsd: number;
+    label: string;
+  } | null>(null);
 
   const d = DICTIONARIES[lang];
 
@@ -184,6 +198,42 @@ export function GrimoireLayout() {
     setHydrated(true);
   }, []);
 
+  // Ingest a split-shipment box from GrimCourier Crew. Runs once, right after
+  // the localStorage rehydration so the kg unit is not overwritten by it.
+  const crewParsed = useRef(false);
+  useEffect(() => {
+    if (!hydrated || crewParsed.current) return;
+    crewParsed.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const rawW = params.get("weightKg");
+    const rawF = params.get("fobUsd");
+    if (rawW === null || rawF === null) return;
+    const weightKg = Number(rawW);
+    const fobUsd = Number(rawF);
+    // Untrusted input: require finite numbers within sane bounds.
+    if (!Number.isFinite(weightKg) || weightKg <= 0 || weightKg > 10000) return;
+    if (!Number.isFinite(fobUsd) || fobUsd < 0 || fobUsd > 1_000_000) return;
+
+    const label = (params.get("missionName") ?? "")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 60);
+    const idx = Number(params.get("boxIndex"));
+    const boxIndex = Number.isInteger(idx) && idx >= 1 && idx <= 999 ? idx : undefined;
+
+    setSettings((prev) => ({ ...prev, unit: "kg" }));
+    setCalcIncoming({ seq: 1, weightKg, fobUsd, label });
+    setCrewBox({
+      weightKg,
+      fobUsd,
+      label,
+      boxIndex,
+      showBanner: params.get("fromCrew") === "1",
+    });
+  }, [hydrated]);
+
   // Persist whenever meaningful state changes (after hydration).
   useEffect(() => {
     if (!hydrated) return;
@@ -256,6 +306,27 @@ export function GrimoireLayout() {
     },
     [nextId, cinematicsEnabled]
   );
+
+  const dismissCrewBanner = useCallback(() => {
+    setCrewBox(null);
+    window.history.replaceState({}, "", window.location.pathname);
+  }, []);
+
+  // Banner button: same inscription handler as the calculator (plays the
+  // packing cinematic), then clears the calculator draft and the URL params.
+  const inscribeCrewBox = useCallback(() => {
+    if (!crewBox) return;
+    handleInscribe({
+      label: crewBox.label || (crewBox.boxIndex ? `Crew #${crewBox.boxIndex}` : "Crew box"),
+      packageWeight: crewBox.weightKg,
+      fobValue: crewBox.fobUsd,
+    });
+    // Empty the calculator label so the same box is not inscribed twice.
+    setCalcIncoming((prev) =>
+      prev ? { ...prev, seq: prev.seq + 1, label: "" } : prev
+    );
+    dismissCrewBanner();
+  }, [crewBox, handleInscribe, dismissCrewBanner]);
 
   // Oracle -> Guild Log: sensible defaults (1.2 kg / $45 FOB) for a tracked parcel.
   const handleCreateQuestFromTracking = useCallback(
@@ -468,6 +539,14 @@ export function GrimoireLayout() {
             >
               {d.feedbackButton}
             </button>
+            <a
+              href="https://grim-courier-crew-orcin.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-orange-400/50 bg-gradient-to-r from-orange-500/20 to-rose-500/15 px-2.5 py-1 text-[11px] font-bold text-orange-100 shadow-[0_0_18px_-6px_rgba(251,146,60,0.9)] ring-1 ring-inset ring-orange-400/20 transition-all hover:from-orange-500/35 hover:shadow-[0_0_24px_-4px_rgba(251,146,60,1)] active:scale-95 sm:px-3 sm:py-1.5 sm:text-xs lg:text-sm"
+            >
+              {d.crewButton}
+            </a>
             <button
               type="button"
               onClick={toggleLang}
@@ -546,12 +625,44 @@ export function GrimoireLayout() {
 
         {/* Two-column grimoire grid */}
         <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex min-w-0 flex-col gap-4">
+          {crewBox?.showBanner ? (
+            <div
+              role="status"
+              className="relative rounded-2xl border border-orange-400/50 bg-gradient-to-r from-orange-950/70 via-arcane-violet/25 to-orange-950/70 p-4 pr-10 shadow-[0_0_24px_-8px_rgba(251,146,60,0.8)]"
+            >
+              <button
+                type="button"
+                onClick={dismissCrewBanner}
+                aria-label={d.crewDismiss}
+                className="absolute right-2 top-2 rounded-full p-1 text-amber-100/70 transition-colors hover:bg-black/40 hover:text-amber-50"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+              <p className="text-xs leading-relaxed text-amber-100 sm:text-sm">
+                {tr(d.crewBanner, {
+                  box: crewBox.boxIndex ? `#${crewBox.boxIndex}` : "",
+                  kg: Number(crewBox.weightKg.toFixed(3)),
+                  fob: Number(crewBox.fobUsd.toFixed(2)),
+                }).replace(/\s{2,}/g, " ")}
+              </p>
+              <button
+                type="button"
+                onClick={inscribeCrewBox}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/25 to-orange-500/20 px-3 py-1.5 text-xs font-bold text-amber-50 shadow-[0_0_18px_-6px_rgba(245,158,11,0.9)] transition-all hover:from-amber-500/40 active:scale-95 sm:text-sm"
+              >
+                {d.crewInscribeNow}
+              </button>
+            </div>
+          ) : null}
           <AlchemistCalculator
             lang={lang}
             settings={settings}
             onSettingsChange={setSettings}
             onInscribe={handleInscribe}
+            incoming={calcIncoming}
           />
+          </div>
           <div className="flex flex-col gap-6">
             <TrackingOracle
               lang={lang}

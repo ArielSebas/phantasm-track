@@ -200,6 +200,12 @@ export interface Dictionary {
   readonly oracleReportTemplate: string; // {code} {detected}
   readonly suggestCatCourierLabel: string;
 
+  // GrimCourier Crew integration (split-shipment boxes via URL params)
+  readonly crewButton: string;
+  readonly crewBanner: string; // {box} {kg} {fob}
+  readonly crewInscribeNow: string;
+  readonly crewDismiss: string;
+
   // Validation / errors
   readonly errFieldRejected: string; // uses {field}
   readonly errMissing: string; // uses {field}
@@ -407,6 +413,12 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     oracleReportTemplate:
       "Hola, probé la guía {code} en el Oráculo. El sistema detectó {detected}, pero en realidad mi paquete vino por el courier: [ESCRIBE AQUÍ EL COURIER REAL].",
     suggestCatCourierLabel: "🚚 Añadir/Ajustar Courier",
+
+    crewButton: "🦅 Escuadrón 4x4 (Crew)",
+    crewBanner:
+      "🦅 Caja {box} recibida desde GrimCourier Crew ({kg} kg · ${fob} USD FOB) — Datos cargados en el Grimorio. ¡Haz clic en 'Inscribir como Misión Activa' abajo para guardarla en tu Bitácora!",
+    crewInscribeNow: "✨ Inscribir Caja Ahora",
+    crewDismiss: "Cerrar aviso de Crew",
   },
 
   en: {
@@ -606,6 +618,12 @@ export const DICTIONARIES: Record<Lang, Dictionary> = {
     oracleReportTemplate:
       "Hi, I tested tracking code {code} in the Oracle. The system detected {detected}, but my package actually came through this carrier: [WRITE THE REAL CARRIER HERE].",
     suggestCatCourierLabel: "🚚 Add/Adjust Courier",
+
+    crewButton: "🦅 4x4 Split Crew",
+    crewBanner:
+      "🦅 Box {box} received from GrimCourier Crew ({kg} kg · ${fob} USD FOB) — Loaded into the Grimoire. Click 'Inscribe as Active Mission' below to save it to your Ledger!",
+    crewInscribeNow: "✨ Inscribe Box Now",
+    crewDismiss: "Dismiss Crew notice",
   },
 };
 

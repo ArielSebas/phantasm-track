@@ -76,6 +76,16 @@ export interface AlchemistCalculatorProps {
    * parent can drive the per-parcel 4x4 weight Mana Bar live.
    */
   readonly onWeightChange?: (weightKg: number) => void;
+  /**
+   * Values pushed in from outside (e.g. a GrimCourier Crew box). Applied once
+   * per `seq`; the parent is responsible for switching the unit to kg.
+   */
+  readonly incoming?: {
+    readonly seq: number;
+    readonly weightKg: number;
+    readonly fobUsd: number;
+    readonly label: string;
+  } | null;
 }
 
 interface Preset {
@@ -185,6 +195,7 @@ export function AlchemistCalculator({
   onSettingsChange,
   onInscribe,
   onWeightChange,
+  incoming = null,
 }: AlchemistCalculatorProps) {
   const d = DICTIONARIES[lang];
   const { mode, unit, courier, ratePerLb } = settings;
@@ -216,6 +227,17 @@ export function AlchemistCalculator({
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   // Tracks which preset (if any) is currently active, for the accordion badge.
   const [activePreset, setActivePreset] = useState<string | null>(null);
+
+  // Apply externally supplied values (Crew box) once per request. The parent
+  // switches the unit to kg, so the weight field is filled in kg.
+  const [appliedSeq, setAppliedSeq] = useState(0);
+  if (incoming && incoming.seq !== appliedSeq) {
+    setAppliedSeq(incoming.seq);
+    setWeight(String(Number(incoming.weightKg.toFixed(3))));
+    setFob(String(Number(incoming.fobUsd.toFixed(2))));
+    setLabel(incoming.label);
+    setActivePreset(null);
+  }
 
   const vatPercent = Math.round(DEFAULT_VAT_RATE * 100);
 
