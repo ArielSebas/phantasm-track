@@ -84,6 +84,23 @@ function isOriginAllowed(req: Request): boolean {
   }
 }
 
+// Only post to real Discord webhook endpoints (guards against a mistyped or
+// tampered env var turning this route into a generic outbound request).
+function isDiscordWebhook(value: string): boolean {
+  try {
+    const u = new URL(value);
+    return (
+      u.protocol === "https:" &&
+      ["discord.com", "discordapp.com", "ptb.discord.com", "canary.discord.com"].includes(
+        u.hostname
+      ) &&
+      u.pathname.startsWith("/api/webhooks/")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function fail(status: number, error: string, headers?: Record<string, string>) {
   return NextResponse.json({ ok: false, error }, { status, headers });
 }
@@ -150,7 +167,7 @@ export async function POST(req: Request) {
     const createdAt = new Date().toISOString();
 
     const discordWebhook = process.env.DISCORD_WEBHOOK_URL?.trim();
-    if (discordWebhook && discordWebhook.startsWith("https://")) {
+    if (discordWebhook && isDiscordWebhook(discordWebhook)) {
       try {
         await fetch(discordWebhook, {
           method: "POST",

@@ -208,18 +208,22 @@ export function GrimoireLayout() {
     const rawW = params.get("weightKg");
     const rawF = params.get("fobUsd");
     if (rawW === null || rawF === null) return;
-    const weightKg = Number(rawW);
-    const fobUsd = Number(rawF);
-    // Untrusted input: require finite numbers within sane bounds.
-    if (!Number.isFinite(weightKg) || weightKg <= 0 || weightKg > 10000) return;
-    if (!Number.isFinite(fobUsd) || fobUsd < 0 || fobUsd > 1_000_000) return;
+    // Untrusted input: reject non-numeric values, then clamp to sane bounds.
+    if (rawW.trim() === "" || rawF.trim() === "") return;
+    const parsedW = Number(rawW);
+    const parsedF = Number(rawF);
+    if (!Number.isFinite(parsedW) || !Number.isFinite(parsedF)) return;
+    const weightKg = Math.min(1000, Math.max(0.01, parsedW));
+    const fobUsd = Math.min(100000, Math.max(0, parsedF));
 
+    // Strip control/bidi/zero-width chars and <> / quotes, collapse spaces, cap 120.
     const label = (params.get("missionName") ?? "")
       // eslint-disable-next-line no-control-regex
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
+      .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]/g, "")
+      .replace(/[<>"'`]/g, "")
       .replace(/\s+/g, " ")
       .trim()
-      .slice(0, 60);
+      .slice(0, 120);
     const idx = Number(params.get("boxIndex"));
     const boxIndex = Number.isInteger(idx) && idx >= 1 && idx <= 999 ? idx : undefined;
 
@@ -502,11 +506,11 @@ export function GrimoireLayout() {
         >
           {/* Top-right controls: replay-handoff + feedback + language pill.
               No z-index while spotlighted so only the switch escapes. */}
-          {/* Below lg it flows above the title (never overlaps it); from lg up it
-              floats in the top-right corner as before. */}
+          {/* Always in normal flow above the moon divider and title, so the five
+              pills can never overlap the crescent moon on any viewport. */}
           <div
             className={[
-              "mb-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 lg:absolute lg:right-3 lg:top-3 lg:mb-0 lg:justify-end",
+              "mb-5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 lg:mb-6",
               spotlight ? "relative" : "relative z-20",
             ].join(" ")}
           >
